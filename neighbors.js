@@ -7,9 +7,21 @@ const NSRC={
  hpf:['HotelPlanner, hotels near Fairplex','https://www.hotelplanner.com/Hotels/44918-NEAR-LA-County-Fairplex'],
  hpp:['HotelPlanner, Pomona hotels','https://www.hotelplanner.com/Hotels/8478-in-Pomona-CA'],
  hpm:['HotelPlanner, Montclair hotels','https://www.hotelplanner.com/Hotels/53154-in-Montclair-CA.html'],
+ hgr:['HotelGuides, Rancho Cucamonga hotels','https://hotelguides.com/california/rancho-cucamonga-ca-hotels.html'],
  mc:['Meetings & Conventions, Sheraton Fairplex listing','https://www.meetings-conventions.com/Meeting-Event-Venues/Pomona-CA/Convention-Hotel/Sheraton-Fairplex-Hotel-Conference-Ctr-p51087111']
 };
 const NH=[
+ {c:'Rancho Cucamonga',t:'select',n:'Aloft Rancho Cucamonga',a:'10480 4th St, Rancho Cucamonga',r:136,lat:34.0790,lng:-117.5535,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Best Western Plus Heritage Inn Rancho Cucamonga',a:'8179 Spruce Ave, Rancho Cucamonga',r:115,lat:34.0795,lng:-117.5660,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'ext',n:'TownePlace Suites Rancho Cucamonga',a:'9625 Milliken Ave, Rancho Cucamonga',r:112,lat:34.0850,lng:-117.5580,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Holiday Inn Express Rancho Cucamonga',a:'9589 Milliken Ave, Rancho Cucamonga',r:54,lat:34.0842,lng:-117.5576,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Fairfield Inn & Suites Rancho Cucamonga',a:'9550 Pittsburgh Ave, Rancho Cucamonga',r:108,lat:34.0838,lng:-117.5603,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'ext',n:'Residence Inn Rancho Cucamonga',a:'9299 Haven Ave, Rancho Cucamonga',r:126,lat:34.0822,lng:-117.5812,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Courtyard Rancho Cucamonga',a:'11525 Mission Vista Dr, Rancho Cucamonga',r:117,lat:34.1032,lng:-117.5452,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Hilton Garden Inn Rancho Cucamonga',a:'11481 Mission Vista Dr, Rancho Cucamonga',r:122,lat:34.1028,lng:-117.5462,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'ext',n:'Homewood Suites Rancho Cucamonga',a:'11433 Mission Vista Dr, Rancho Cucamonga',r:103,lat:34.1024,lng:-117.5472,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Four Points by Sheraton Rancho Cucamonga',a:'11960 Foothill Blvd, Rancho Cucamonga',r:118,lat:34.1070,lng:-117.5378,s:['hgr']},
+ {c:'Rancho Cucamonga',t:'select',n:'Hampton Inn & Suites Rancho Cucamonga',a:'11669 Foothill Blvd, Rancho Cucamonga',r:108,lat:34.1070,lng:-117.5412,s:['hgr']},
  {c:'Pomona',t:'full',n:'Sheraton Fairplex Hotel & Conference Center',a:'601 W McKinley Ave, Pomona',r:244,lat:34.0856,lng:-117.7700,s:['mc'],note:'On the Fairplex grounds next to the LA28 cricket stadium; 61,904 sq ft of meeting space. Expect LA28 and broadcast blocks.'},
  {c:'Pomona',t:'full',n:'DoubleTree by Hilton Pomona',a:'3101 W Temple Ave, Pomona',r:131,lat:34.0587,lng:-117.8110,s:['hgp']},
  {c:'Pomona',t:'select',n:'Hilton Garden Inn Pomona',a:'2027 Rancho Valley Dr, Pomona',r:148,lat:34.0332,lng:-117.7818,s:['hgp']},
