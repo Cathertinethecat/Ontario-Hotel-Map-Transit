@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="la_transit.js"></script>
-<script src="neighbors.js"></script>
-<script src="connectors.js"></script>
+<script src="la_transit.js?v=1792392127"></script>
+<script src="neighbors.js?v=1792392127"></script>
+<script src="connectors.js?v=1792392127"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -332,7 +332,7 @@ document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25
 /* other cities' hotels */
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];
 const OC_ORDER=['Ontario','Rancho Cucamonga','Pomona','Claremont','Montclair','Upland','Chino','Chino Hills','Fontana','Rialto','Colton','San Bernardino','Loma Linda','Redlands','Yucaipa','Eastvale','Jurupa Valley','Norco','Corona','Riverside','Moreno Valley','Perris'];const CITY_CENTER_FROM_LIMITS=OC_ORDER.filter(c=>c!=='Chino');const OG={};const ocBox=document.getElementById('otherToggles');
-OC_ORDER.filter(c=>c!=='Ontario').forEach(city=>{const slug=city.toLowerCase().replace(/ /g,'-');OG[city]={};const tiers=[...new Set(NH.filter(x=>x.c===city).map(x=>x.t))];
+OC_ORDER.filter(c=>c!=='Ontario'&&NH.some(x=>x.c===c)).forEach(city=>{const slug=city.toLowerCase().replace(/ /g,'-');OG[city]={};const tiers=[...new Set(NH.filter(x=>x.c===city).map(x=>x.t))];
  const div=document.createElement('div');div.className='oc';div.id='oc_'+slug;
  div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${city}</b> <span style="color:#5f5b50">(${NH.filter(x=>x.c===city).length} listed)</span></label>`+tiers.map(t=>`<label><input type="checkbox" data-ocity="${city}" data-tier="${t}" checked> <span style="color:${CAT[t].c}">&#9679;</span> ${CAT[t].l.split(' / ')[0]}</label>`).join('');
  ocBox.appendChild(div);tiers.forEach(t=>OG[city][t]=L.layerGroup());});
@@ -340,14 +340,14 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const icon=L.divIcon({className:'',html:`<div class="mk oth" style="width:${d}px;height:${d}px;background:${CAT[x.t].c}">${x.r==null?'?':x.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
  const src=x.s.map(k=>`<a href="${NSRC[k][1]}" target="_blank" rel="noopener">${NSRC[k][0]}</a>`).join(' &middot; ');
  L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]).bindPopup(`<h2>${x.n}</h2><p class="addr">${x.a}. ${x.c}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a)}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'n/a':x.r}</b><span>rooms</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>tier</span></div></div>${x.note?`<p class="seas">${x.note}</p>`:''}<p class="seas"><i>Sources</i>${src}</p><p class="note">Room count as given by the listing cited; n/a where the listing shows none. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
-const ocTierCbs=[...ocBox.querySelectorAll('input[data-ocity]')];const ocCityCbs=OC_ORDER.filter(c=>c!=='Ontario').map(c=>document.getElementById('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));const ocAll=document.getElementById('tAllOther');
+const ocTierCbs=[...ocBox.querySelectorAll('input[data-ocity]')];const OC_OTHER=OC_ORDER.filter(c=>c!=='Ontario'&&NH.some(x=>x.c===c));const ocCityCbs=OC_OTHER.map(c=>document.getElementById('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));const ocAll=document.getElementById('tAllOther');
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
-function syncOc(){OC_ORDER.filter(c=>c!=='Ontario').forEach((c,i)=>{const cbs=ocTierCbs.filter(x=>x.dataset.ocity===c);setBox(ocCityCbs[i],cbs.filter(x=>x.checked).length,cbs.length);});const n=ocCityCbs.filter(c=>c.checked).length,m=ocCityCbs.filter(c=>c.indeterminate).length;ocAll.checked=n===ocCityCbs.length;ocAll.indeterminate=!ocAll.checked&&(n>0||m>0);}
+function syncOc(){OC_OTHER.forEach((c,i)=>{const cbs=ocTierCbs.filter(x=>x.dataset.ocity===c);setBox(ocCityCbs[i],cbs.filter(x=>x.checked).length,cbs.length);});const n=ocCityCbs.filter(c=>c.checked).length,m=ocCityCbs.filter(c=>c.indeterminate).length;ocAll.checked=n===ocCityCbs.length;ocAll.indeterminate=!ocAll.checked&&(n>0||m>0);}
 /* one gathered dot per city; click to spread its hotels, click the label to gather again */
 const ocState={};const cdG=L.layerGroup().addTo(map);
-OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter(x=>x.c===city);const rooms=hs.reduce((a,x)=>a+(x.r||0),0);const known=hs.filter(x=>x.r!=null).length;
+OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter(x=>x.c===city);if(!hs.length){ocState[city]=null;return;}const rooms=hs.reduce((a,x)=>a+(x.r||0),0);const known=hs.filter(x=>x.r!=null).length;
  const lat=hs.reduce((a,x)=>a+x.lat,0)/hs.length,lng=hs.reduce((a,x)=>a+x.lng,0)/hs.length;
- const byT={};hs.forEach(x=>byT[x.t]=(byT[x.t]||0)+(x.r||60));const top=Object.keys(byT).sort((a,b)=>byT[b]-byT[a])[0];
+ const byT={};hs.forEach(x=>byT[x.t]=(byT[x.t]||0)+(x.r||60));const top=Object.keys(byT).sort((a,b)=>byT[b]-byT[a])[0]||'select';
  const d=Math.min(48,Math.round(18+Math.sqrt(rooms||120)*0.9));const w=Math.max(d,150);
  const dot=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div class="cdot" style="width:${w}px;height:${d+22}px"><div class="mk${city==='Ontario'?'':' oth'}" style="width:${d}px;height:${d}px;background:${CAT[top].c}">${rooms||'?'}</div><div class="ct" style="top:${d+2}px">${city} &middot; ${hs.length} hotels</div></div>`,iconSize:[w,d+22],iconAnchor:[w/2,d/2]}),zIndexOffset:500});
  dot.bindTooltip(`${city}: ${hs.length} hotels, ${rooms.toLocaleString()} rooms${known<hs.length?' counted ('+(hs.length-known)+' without a count)':''}. Tap to spread.`,{direction:'top',offset:[0,-d/2]});
@@ -355,18 +355,18 @@ OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter
  dot.on('click',()=>{ocState[city].expanded=true;refreshCity(city);});lbl.on('click',()=>{ocState[city].expanded=false;refreshCity(city);});
  ocState[city]={expanded:false,dot,lbl};});
 window.setCityCenter=(city,ll)=>{const st=ocState[city];if(!st)return;st.dot.setLatLng(ll);st.lbl.setLatLng(ll);};
-function refreshCity(city){const st=ocState[city];const cbs=city==='Ontario'?tierCbs:ocTierCbs.filter(x=>x.dataset.ocity===city);const anyOn=cbs.some(c=>c.checked);
+function refreshCity(city){const st=ocState[city];if(!st)return;const cbs=city==='Ontario'?tierCbs:ocTierCbs.filter(x=>x.dataset.ocity===city);const anyOn=cbs.some(c=>c.checked);
  const showDot=anyOn&&!st.expanded,showLbl=anyOn&&st.expanded;
  showDot?st.dot.addTo(cdG):cdG.removeLayer(st.dot);showLbl?st.lbl.addTo(cdG):cdG.removeLayer(st.lbl);
  cbs.forEach(cb=>{const g=city==='Ontario'?TG[cb.dataset.tier]:OG[city][cb.dataset.tier];(st.expanded&&cb.checked)?g.addTo(map):map.removeLayer(g);});}
 function setOcTier(cb,on){cb.checked=on;}
 ocTierCbs.forEach(cb=>cb.onchange=e=>{setOcTier(cb,e.target.checked);refreshCity(cb.dataset.ocity);syncOc();});
-const OC_OTHER=OC_ORDER.filter(c=>c!=='Ontario');ocCityCbs.forEach((cb,i)=>cb.onchange=e=>{const on=e.target.checked;ocTierCbs.filter(x=>x.dataset.ocity===OC_OTHER[i]).forEach(x=>setOcTier(x,on));refreshCity(OC_OTHER[i]);syncOc();});
+ocCityCbs.forEach((cb,i)=>cb.onchange=e=>{const on=e.target.checked;ocTierCbs.filter(x=>x.dataset.ocity===OC_OTHER[i]).forEach(x=>setOcTier(x,on));refreshCity(OC_OTHER[i]);syncOc();});
 ocAll.onchange=e=>{const on=e.target.checked;ocTierCbs.forEach(x=>setOcTier(x,on));OC_OTHER.forEach(refreshCity);syncOc();};
-document.getElementById('ocExpand').onclick=()=>OC_ORDER.forEach(c=>{ocState[c].expanded=true;refreshCity(c);});
-document.getElementById('onExpand').onclick=()=>{ocState['Ontario'].expanded=true;refreshCity('Ontario');};
-document.getElementById('onCollapse').onclick=()=>{ocState['Ontario'].expanded=false;refreshCity('Ontario');};
-document.getElementById('ocCollapse').onclick=()=>OC_ORDER.forEach(c=>{ocState[c].expanded=false;refreshCity(c);});
+document.getElementById('ocExpand').onclick=()=>OC_ORDER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=true;refreshCity(c);});
+document.getElementById('onExpand').onclick=()=>{if(ocState['Ontario'])ocState['Ontario'].expanded=true;refreshCity('Ontario');};
+document.getElementById('onCollapse').onclick=()=>{if(ocState['Ontario'])ocState['Ontario'].expanded=false;refreshCity('Ontario');};
+document.getElementById('ocCollapse').onclick=()=>OC_ORDER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=false;refreshCity(c);});
 const allCb=document.getElementById('tAllHotels');
 function syncAll(){const n=tierCbs.filter(c=>c.checked).length;allCb.checked=n===tierCbs.length;allCb.indeterminate=n>0&&n<tierCbs.length;}
 tierCbs.forEach(cb=>cb.onchange=e=>{refreshCity('Ontario');syncAll();});
@@ -380,7 +380,7 @@ function makeSection(masterId){const m=document.getElementById(masterId);if(!m)r
  const wrap=document.createElement('div');wrap.className='grp';let n=head.nextSibling;while(n){const nx=n.nextSibling;if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))wrap.appendChild(n);n=nx;}box.appendChild(wrap);
  const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
  b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
-['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_ORDER.forEach(c=>makeSection('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));
+['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_OTHER.forEach(c=>makeSection('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));
 </script>
 </body>
 </html>
