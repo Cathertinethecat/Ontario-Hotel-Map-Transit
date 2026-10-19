@@ -61,6 +61,7 @@
     <label><input type="checkbox" id="tRail" checked> Metro rail</label>
     <label><input type="checkbox" id="tML" checked> Metrolink</label>
     <label><input type="checkbox" id="tLA28" checked> LA28 venues</label>
+    <label><input type="checkbox" id="tCity" checked> City limits</label>
   </div>
   <div class="btns" id="connToggles"><b style="font-size:.85rem;width:100%">Connectors (tap a line for details)</b></div>
   <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
@@ -72,10 +73,11 @@
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
   </div>
   <p class="note" style="margin-top:8px"><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
+  <p class="note" id="cityLegend"></p>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
-    <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address.</p>
+    <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address. City limits are the official boundaries from the <a href="https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0" target="_blank" rel="noopener">California Board of Equalization city layer</a>, loaded live.</p>
     <p class="note">Metro rail geometry from LA Metro’s published GTFS feed, stitched to the 2025 network. Metrolink lines and LA28 venues placed by station and venue location, approximate. Venues and sports from la28.org, 41 venues in the LA region.</p>
     <p class="note">No rail reaches ONT or the hotel district; nearest stations are Metrolink East Ontario and Rancho Cucamonga, and the A Line ends at Pomona North. No shared hotel shuttle: 14 hotels run their own vans to ONT (badged on cards); <a href="https://omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf" target="_blank" rel="noopener">Omnitrans Route 61</a> links Holt Blvd, ONT and Ontario Mills every 20 minutes but skips the Convention Center.</p>
   </div>
@@ -175,7 +177,15 @@ const satGroup=L.layerGroup([sat,ref,lab]).addTo(map);
 document.getElementById('sat').onchange=e=>{if(e.target.checked){map.removeLayer(streets);satGroup.addTo(map);}else{map.removeLayer(satGroup);streets.addTo(map);}};
 
 /* approximate city limits */
-L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],[34.0,-117.65],[34.0,-117.683]],{color:'#e6c86a',weight:2,dashArray:'6 4',fill:false}).addTo(map);
+/* official city limits from the CA Board of Equalization city layer, loaded live */
+const cityG=L.layerGroup().addTo(map);
+const CITY_STYLE={'Rancho Cucamonga':{color:'#FF3D00',weight:5},'Ontario':{color:'#FFD600',weight:5},'Upland':{color:'#ffffff',weight:2,dashArray:'6 4'},'Montclair':{color:'#ffffff',weight:2,dashArray:'6 4'},'Fontana':{color:'#ffffff',weight:2,dashArray:'6 4'},'Chino':{color:'#ffffff',weight:2,dashArray:'6 4'},'Eastvale':{color:'#ffffff',weight:2,dashArray:'6 4'},'Pomona':{color:'#ffffff',weight:2,dashArray:'6 4'},'Claremont':{color:'#ffffff',weight:2,dashArray:'6 4'}};
+fetch("https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0/query?where=CITY%20IN%20('Rancho%20Cucamonga','Ontario','Upland','Montclair','Fontana','Chino','Eastvale','Pomona','Claremont')&outFields=CITY&outSR=4326&f=geojson")
+ .then(r=>r.json()).then(gj=>{
+   L.geoJSON(gj,{style:f=>Object.assign({fill:false,opacity:.95},CITY_STYLE[f.properties.CITY]||{color:'#fff',weight:2,dashArray:'6 4'}),
+     onEachFeature:(f,l)=>{l.bindTooltip(f.properties.CITY+' city limits',{sticky:true});if(CITY_STYLE[f.properties.CITY]&&CITY_STYLE[f.properties.CITY].weight===5)l.bringToBack();}}).addTo(cityG);
+   const lg=document.getElementById('cityLegend');if(lg)lg.innerHTML='<span style="color:#FF3D00">&#9644;</span> Rancho Cucamonga limits &nbsp;<span style="color:#FFD600">&#9644;</span> Ontario limits &nbsp;<span style="color:#888">&#9644;</span> neighboring cities (CA Board of Equalization)';
+ }).catch(()=>{L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],[34.0,-117.65],[34.0,-117.683]],{color:'#FFD600',weight:3,dashArray:'6 4',fill:false}).addTo(cityG);});
 
 LM.forEach(l=>L.marker([l[1],l[2]],{icon:L.divIcon({className:'',html:`<div class="lm">${l[0]}</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(map));
 
@@ -198,7 +208,7 @@ TRANSIT.mlStations.forEach(s=>L.circleMarker([s[1],s[2]],{radius:4,color:'#444',
 map.on('zoomend',()=>{const on=map.getZoom()>=12&&document.getElementById('tRail').checked;if(on&&!map.hasLayer(stG))stG.addTo(map);if(!on&&map.hasLayer(stG))map.removeLayer(stG);});
 TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:'<div class="vm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(laG).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate.</p>`,{maxWidth:300});});
 const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
-tog('tRail',railG);tog('tML',mlG);tog('tLA28',laG);
+tog('tRail',railG);tog('tCity',cityG);tog('tML',mlG);tog('tLA28',laG);
 /* connectors */
 const CG={};const legend=document.getElementById('connLegend');const togs=document.getElementById('connToggles');
 CONN.layers.forEach(c=>{
