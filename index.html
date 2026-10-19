@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792439210"></script>
-<script src="la_transit.js?v=1792439210"></script>
-<script src="neighbors.js?v=1792439210"></script>
-<script src="connectors.js?v=1792439210"></script>
+<script src="rates_history.js?v=1792440305"></script>
+<script src="la_transit.js?v=1792440305"></script>
+<script src="neighbors.js?v=1792440305"></script>
+<script src="connectors.js?v=1792440305"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -138,6 +138,20 @@
     <div id="countyBox" style="width:100%"></div></div>
   <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
   <p class="note" id="connLegend"></p>
+  <div class="btns" id="keyBox" style="display:block;border:1px solid #c9c3b3;border-radius:4px;padding:6px 8px;margin-top:6px;background:#f6f3ea">
+    <b style="font-size:.85rem">Map key</b>
+    <div style="font-size:.78rem;line-height:1.5;margin-top:3px"><b>Hotel tiers</b> (marker color; the number in the circle is the room count)</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="color:#b3412f">&#9679;</span> <b>Full service</b>: restaurant, bar and meeting space on site, usually 150+ rooms (convention and airport hotels)</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="color:#c98a1c">&#9679;</span> <b>Select service</b>: limited food and small meeting rooms (Hampton, Courtyard, Holiday Inn Express and similar)</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="color:#2f7d4e">&#9679;</span> <b>Extended stay</b>: suites with kitchens, built for stays of a week or more (Residence Inn, Home2, Extended Stay America)</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="color:#6b5ea8">&#9679;</span> <b>Economy</b>: motels and budget inns, few or no amenities</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px dashed #b3412f;color:#b3412f;font-size:9px;line-height:12px;text-align:center;vertical-align:middle">?</span> Dashed outline = planned hotel, not yet open</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c98a1c;outline:1.5px dashed #1d1c19;vertical-align:middle"></span> Dark dashed ring = hotel outside Ontario</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c98a1c;vertical-align:middle"></span> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#c98a1c;vertical-align:middle"></span> Bigger marker = more rooms</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#1f4e79;color:#fff;font-size:9px;line-height:14px;text-align:center;vertical-align:middle">12</span> City dot: number of hotels in that city; tap to spread them out</div>
+    <div style="font-size:.78rem;line-height:1.5;margin-top:4px"><b>Other markers</b> &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fff;border:2px solid #2f7d4e;vertical-align:middle"></span> Ontario Sports Empire &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #6a3fb5;vertical-align:middle"></span> West Valley Connector BRT &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #d4a017;vertical-align:middle"></span> LA28 venue (larger = bigger capacity)</div>
+    <div style="font-size:.78rem;line-height:1.5">Basemap: Google Maps (satellite or street). <span style="color:#FFD600;font-weight:700">&#9644;</span> City limits, one color per city &nbsp; <span style="color:#9e9e9e;font-weight:700">&#9638;</span> Unincorporated county land</div>
+  </div>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
     <p class="note" style="margin:6px 0 2px"><b>Hotels.</b></p>
