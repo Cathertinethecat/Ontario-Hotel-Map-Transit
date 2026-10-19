@@ -82,21 +82,21 @@
   <h1 id="ptog">Ontario Hotels: Transit <small id="pind">tap for legend &amp; controls</small></h1>
   <div class="body">
   <p>Same hotels, rail and LA28 venues as the main map, plus every current, planned and cancelled link between the Metro A Line, Metrolink, ONT and the Ontario hotels, each in its own color. Tap a line or station for what it is, when, and the source.</p>
-  <div class="btns">
+  <div class="btns"><b style="font-size:.85rem;width:100%">Zoom to area</b>
     <button id="bCity">Ontario</button>
     <button id="bDist">Hotel district</button>
     <button id="bLA">LA region</button>
+    <button id="bCorr">Pomona to Rancho corridor</button>
   </div>
   <div class="btns">
     <label><input type="checkbox" id="sat" checked> Satellite</label>
-    <label><input type="checkbox" id="tLA28" checked> <span style="color:#d4a017">&#9673;</span> LA28 venues</label>
     <label style="width:100%;padding:2px 0;border:none;background:none"><input type="checkbox" id="tAllOverlays" checked> <b style="font-size:.85rem">Transit</b> <span style="color:#5f5b50">(Metro rail, Metrolink)</span></label>
     <label><input type="checkbox" id="tRail" checked> Metro rail</label>
     <label><input type="checkbox" id="tML" checked> Metrolink</label>
     
   </div>
   <div class="btns" id="connToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllConn" checked> <b style="font-size:.85rem">Connectors</b> <span style="color:#5f5b50">(all on/off; tap a line for details)</span></label></div>
-  <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
+  <div class="btns" id="venueToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tLA28" checked> <b style="font-size:.85rem">LA28 venues</b> <span style="color:#5f5b50">(42, <span style="color:#d4a017">&#9673;</span>)</span></label></div>
   <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
     <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
     <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
@@ -106,7 +106,6 @@
   </div>
   <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other cities' hotels</b> <span style="color:#5f5b50">(Pomona, Claremont, Montclair, Upland, Chino)</span></label></div>
   <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
-  <p class="note" style="margin-top:8px"><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
