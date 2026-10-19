@@ -81,12 +81,13 @@
   </div>
   <div class="btns">
     <label><input type="checkbox" id="sat" checked> Satellite</label>
+    <label style="width:100%;padding:2px 0;border:none;background:none"><input type="checkbox" id="tAllOverlays" checked> <b style="font-size:.85rem">Transit and venues</b> <span style="color:#5f5b50">(all on/off)</span></label>
     <label><input type="checkbox" id="tRail" checked> Metro rail</label>
     <label><input type="checkbox" id="tML" checked> Metrolink</label>
     <label><input type="checkbox" id="tLA28" checked> LA28 venues</label>
     <label><input type="checkbox" id="tCity" checked> City limits</label>
   </div>
-  <div class="btns" id="connToggles"><b style="font-size:.85rem;width:100%">Connectors (tap a line for details)</b></div>
+  <div class="btns" id="connToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllConn" checked> <b style="font-size:.85rem">Connectors</b> <span style="color:#5f5b50">(all on/off; tap a line for details)</span></label></div>
   <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
   <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
     <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
@@ -241,6 +242,10 @@ function schedHTML(slug){const c=TRANSIT.schedule&&TRANSIT.schedule[slug];if(!c)
 TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:'<div class="vm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(laG).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no attendance figures.</p>`,{maxWidth:300});});
 const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
 tog('tRail',railG);tog('tCity',cityG);tog('tML',mlG);tog('tLA28',laG);
+const ovCbs=['tRail','tML','tLA28','tCity'].map(id=>document.getElementById(id));const ovAll=document.getElementById('tAllOverlays');
+function syncOv(){const n=ovCbs.filter(c=>c.checked).length;ovAll.checked=n===ovCbs.length;ovAll.indeterminate=n>0&&n<ovCbs.length;}
+ovCbs.forEach(cb=>cb.addEventListener('change',syncOv));
+ovAll.onchange=e=>{ovCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.onchange({target:cb});}});syncOv();};
 /* connectors */
 const CG={};const legend=document.getElementById('connLegend');const togs=document.getElementById('connToggles');
 CONN.layers.forEach(c=>{
@@ -252,6 +257,10 @@ CONN.layers.forEach(c=>{
   const lab=document.createElement('label');lab.innerHTML=`<input type="checkbox" id="c_${c.id}" checked> <span style="color:${c.color};font-weight:700">&#9644;</span> ${c.name.split(' (')[0]}`;togs.appendChild(lab);
   lab.querySelector('input').onchange=e=>e.target.checked?g.addTo(map):map.removeLayer(g);
 });
+const connCbs=[...document.querySelectorAll('#connToggles input[id^="c_"]')];const connAll=document.getElementById('tAllConn');
+function syncConn(){const n=connCbs.filter(c=>c.checked).length;connAll.checked=n===connCbs.length;connAll.indeterminate=n>0&&n<connCbs.length;}
+connCbs.forEach(cb=>cb.addEventListener('change',syncConn));
+connAll.onchange=e=>{connCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.dispatchEvent(new Event('change'));}});syncConn();};
 document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];const allCb=document.getElementById('tAllHotels');
