@@ -66,6 +66,10 @@
     .note{font-size:.72rem}
     .lm{font-size:10px;padding:1px 4px}
   }
+  .secbtn{font:inherit;font-size:.9rem;border:none;background:none;padding:0 6px 0 0;cursor:pointer;color:#1f4e79;line-height:1}
+  .grp{display:none;width:100%}
+  .grp.open{display:flex;flex-wrap:wrap;gap:4px}
+  .btns>label.sechead{display:flex;align-items:center;width:100%;border:none;background:none;padding:2px 0}
 </style>
 </head>
 <body>
@@ -273,6 +277,12 @@ allCb.onchange=e=>{const on=e.target.checked;tierCbs.forEach(cb=>{cb.checked=on;
 document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
 document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
 map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
+/* collapsible legend sections */
+function makeSection(masterId){const m=document.getElementById(masterId);if(!m)return;const head=m.closest('label');const box=head.parentNode;head.classList.add('sechead');
+ const wrap=document.createElement('div');wrap.className='grp';let n=head.nextSibling;while(n){const nx=n.nextSibling;if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))wrap.appendChild(n);n=nx;}box.appendChild(wrap);
+ const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
+ b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
+['tAllOverlays','tAllHotels','tAllCity','tAllConn'].forEach(makeSection);
 </script>
 </body>
 </html>
