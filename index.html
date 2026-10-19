@@ -7,10 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="rates_history.js?v=1792402259"></script>
-<script src="la_transit.js?v=1792402259"></script>
-<script src="neighbors.js?v=1792402259"></script>
-<script src="connectors.js?v=1792402259"></script>
+<script src="rates_history.js?v=1792402337"></script>
+<script src="la_transit.js?v=1792402337"></script>
+<script src="neighbors.js?v=1792402337"></script>
+<script src="connectors.js?v=1792402337"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -437,7 +437,7 @@ map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().query
 /* audit stamp on every card */
 const AUDIT_DATE='October 19, 2026';
 function auditStamp(el){if(!el||el.querySelector('.astamp'))return;const d=document.createElement('div');d.className='astamp';
- d.innerHTML=`Link audit: ${AUDIT_DATE}. <a>What is this?</a><div class="ax">On the date shown, every link and figure on this card was checked by an automated pass: each link was opened to confirm it loads and points at the business or source named, each room count, rating or meeting figure was compared with the page it is cited to, and anything dead, wrong or out of date was fixed or removed. Links that could not be opened by automation (Instagram, Facebook, Yelp, Google Maps) were checked for correct form only. Ratings, prices and availability change daily, so treat figures as a dated snapshot and use the links for the live number.</div>`;
+ d.innerHTML=`Link audit: ${AUDIT_DATE}. <a>What is this?</a><div class="ax">On the date shown, every link and figure on this card was checked by AI agents (Claude Sonnet, run by Anthropic's Claude), not by a person: each agent opened its share of the links to confirm it loads and points at the business or source named, each room count, rating or meeting figure was compared with the page it is cited to, and anything dead, wrong or out of date was reported and then fixed or removed. The audit is automated and can miss things a person would catch, so it is a check on links and figures, not an endorsement of any business. Links that could not be opened by automation (Instagram, Facebook, Yelp, Google Maps) were checked for correct form only. Ratings, prices and availability change daily, so treat figures as a dated snapshot and use the links for the live number.</div>`;
  d.querySelector('a').onclick=e=>{e.preventDefault();d.classList.toggle('open');};el.appendChild(d);}
 map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');auditStamp(el);});
 </script>
