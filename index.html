@@ -7,10 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="rates_history.js?v=1792400386"></script>
-<script src="la_transit.js?v=1792400386"></script>
-<script src="neighbors.js?v=1792400386"></script>
-<script src="connectors.js?v=1792400386"></script>
+<script src="rates_history.js?v=1792401258"></script>
+<script src="la_transit.js?v=1792401258"></script>
+<script src="neighbors.js?v=1792401258"></script>
+<script src="connectors.js?v=1792401258"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -87,6 +87,8 @@
   .cite{color:#1f4e79;text-decoration:none;font-size:.9em}
   details.seas{margin:6px 0 0;padding:0}details.seas>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-style:italic;color:#5f5b50;font-size:.85rem;padding:5px 0 3px;border-top:1px solid #d8d3c5}details.seas>summary::-webkit-details-marker{display:none}details.seas>summary::before{content:'\25B8';font-style:normal;font-size:.8rem;color:#1f4e79}details[open].seas>summary::before{content:'\25BE'}details.seas>summary>i{font-style:italic}details.seas>.sb{padding:0 0 4px}
   .foldbar{display:flex;gap:6px;justify-content:flex-end;margin:4px 0 0}.foldbar button{font:inherit;font-size:.72rem;padding:1px 7px;border:1px solid #c9c3b3;background:#fff;border-radius:3px;cursor:pointer;color:#1f4e79}
+  .leaflet-popup-content{max-height:70vh;overflow:auto;-webkit-overflow-scrolling:touch}
+  @media (max-width:700px){.leaflet-popup-content{max-height:55vh;max-width:min(300px,calc(100vw - 50px))!important}.hphoto{aspect-ratio:21/9}.leaflet-popup{margin-bottom:28px}}
 </style>
 </head>
 <body>
@@ -424,7 +426,7 @@ function foldSections(el){if(!el||el.dataset.folded)return;el.dataset.folded='1'
  const bar=document.createElement('div');bar.className='foldbar';bar.innerHTML='<button type="button" data-f="1">Expand all</button><button type="button" data-f="0">Collapse all</button>';
  bar.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.querySelectorAll('details.seas').forEach(d=>d.open=b.dataset.f==='1');});
  const h=el.querySelector('h2');(h&&h.parentNode===el)?h.after(bar):el.prepend(bar);}
-map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');foldSections(el);});
+map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');foldSections(el);const ll=e.popup.getLatLng();if(ll&&window.innerWidth<=700){setTimeout(()=>{const pt=map.latLngToContainerPoint(ll);const h=map.getSize().y;if(pt.y<h*0.62||pt.y>h*0.9)map.panBy([0,pt.y-h*0.78],{animate:true});},60);}});
 </script>
 </body>
 </html>
