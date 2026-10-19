@@ -15,7 +15,7 @@
   .panel h1{font-size:1.05rem;margin:0;line-height:1.2;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
   .panel h1 small{font-size:.8rem;color:#5f5b50;font-weight:400}
   .panel .body{display:none;margin-top:6px;max-height:70vh;overflow:auto}
-  #connToggles label,#tierToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
+  #connToggles label,#tierToggles label,#cityToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
   .panel.open .body{display:block}
   .leaflet-popup-pane{z-index:1200}
   .leaflet-popup{margin-bottom:28px}
@@ -57,8 +57,8 @@
     .panel p{font-size:.78rem}
     .panel button,.panel label{font-size:.78rem;padding:3px 7px}
     .panel .btns{gap:4px;margin-top:6px}
-    #tierToggles label,#connToggles label{width:calc(50% - 4px);padding:1px 0}
-    #tierToggles label[style],#connToggles b{width:100%}
+    #tierToggles label,#connToggles label,#cityToggles label{width:calc(50% - 4px);padding:1px 0}
+    #tierToggles label[style],#cityToggles label[style],#connToggles b{width:100%}
     .leaflet-popup-content{font-size:13.5px;margin:10px 12px}
     .leaflet-popup-content h2{font-size:1rem}
     .kv b{font-size:1.1rem}
@@ -85,7 +85,6 @@
     <label><input type="checkbox" id="tRail" checked> Metro rail</label>
     <label><input type="checkbox" id="tML" checked> Metrolink</label>
     <label><input type="checkbox" id="tLA28" checked> LA28 venues</label>
-    <label><input type="checkbox" id="tCity" checked> City limits</label>
   </div>
   <div class="btns" id="connToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllConn" checked> <b style="font-size:.85rem">Connectors</b> <span style="color:#5f5b50">(all on/off; tap a line for details)</span></label></div>
   <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
@@ -96,8 +95,8 @@
     <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
   </div>
+  <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
   <p class="note" style="margin-top:8px"><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
-  <p class="note" id="cityLegend"></p>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
@@ -203,13 +202,17 @@ document.getElementById('sat').onchange=e=>{if(e.target.checked){map.removeLayer
 /* approximate city limits */
 /* official city limits from the CA Board of Equalization city layer, loaded live */
 const cityG=L.layerGroup().addTo(map);
-const CITY_STYLE={'Rancho Cucamonga':{color:'#FF3D00',weight:5},'Ontario':{color:'#FFD600',weight:5},'Upland':{color:'#ffffff',weight:2,dashArray:'6 4'},'Montclair':{color:'#ffffff',weight:2,dashArray:'6 4'},'Fontana':{color:'#ffffff',weight:2,dashArray:'6 4'},'Chino':{color:'#ffffff',weight:2,dashArray:'6 4'},'Eastvale':{color:'#ffffff',weight:2,dashArray:'6 4'},'Pomona':{color:'#ffffff',weight:2,dashArray:'6 4'},'Claremont':{color:'#ffffff',weight:2,dashArray:'6 4'}};
+const CITY_STYLE={'Ontario':{color:'#FFD600',weight:5},'Rancho Cucamonga':{color:'#FF3D00',weight:5},'Upland':{color:'#FF4FA3',weight:3,dashArray:'6 4'},'Montclair':{color:'#00E5FF',weight:3,dashArray:'6 4'},'Pomona':{color:'#FFFFFF',weight:3,dashArray:'6 4'},'Chino':{color:'#D500F9',weight:3,dashArray:'6 4'},'Fontana':{color:'#AEEA00',weight:3,dashArray:'6 4'},'Eastvale':{color:'#B388FF',weight:3,dashArray:'6 4'},'Claremont':{color:'#82B1FF',weight:3,dashArray:'6 4'}};
+const cityLayers={};const cityTogs=document.getElementById('cityToggles');
+Object.keys(CITY_STYLE).forEach(n=>{cityLayers[n]=L.layerGroup().addTo(cityG);const lab=document.createElement('label');lab.innerHTML=`<input type="checkbox" data-city="${n}" checked> <span style="color:${CITY_STYLE[n].color};font-weight:700;text-shadow:0 0 2px #555">${CITY_STYLE[n].dashArray?'&#9476;':'&#9644;'}</span> ${n}`;cityTogs.appendChild(lab);lab.querySelector('input').onchange=e=>{e.target.checked?cityLayers[n].addTo(cityG):cityG.removeLayer(cityLayers[n]);syncCity();};});
+const cityCbs=[...cityTogs.querySelectorAll('input[data-city]')];const cityAll=document.getElementById('tAllCity');
+function syncCity(){const k=cityCbs.filter(c=>c.checked).length;cityAll.checked=k===cityCbs.length;cityAll.indeterminate=k>0&&k<cityCbs.length;}
+cityAll.onchange=e=>{cityCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.onchange({target:cb});}});syncCity();};
 fetch("https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0/query?where=CITY%20IN%20('Rancho%20Cucamonga','Ontario','Upland','Montclair','Fontana','Chino','Eastvale','Pomona','Claremont')&outFields=CITY&outSR=4326&f=geojson")
  .then(r=>r.json()).then(gj=>{
    L.geoJSON(gj,{style:f=>Object.assign({fill:false,opacity:.95},CITY_STYLE[f.properties.CITY]||{color:'#fff',weight:2,dashArray:'6 4'}),
-     onEachFeature:(f,l)=>{l.bindTooltip(f.properties.CITY+' city limits',{sticky:true});if(CITY_STYLE[f.properties.CITY]&&CITY_STYLE[f.properties.CITY].weight===5)l.bringToBack();}}).addTo(cityG);
-   const lg=document.getElementById('cityLegend');if(lg)lg.innerHTML='<span style="color:#FF3D00">&#9644;</span> Rancho Cucamonga limits &nbsp;<span style="color:#FFD600">&#9644;</span> Ontario limits &nbsp;<span style="color:#888">&#9644;</span> neighboring cities (CA Board of Equalization)';
- }).catch(()=>{L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],[34.0,-117.65],[34.0,-117.683]],{color:'#FFD600',weight:3,dashArray:'6 4',fill:false}).addTo(cityG);});
+     onEachFeature:(f,l)=>{l.bindTooltip(f.properties.CITY+' city limits',{sticky:true});if(CITY_STYLE[f.properties.CITY]&&CITY_STYLE[f.properties.CITY].weight===5)l.bringToBack();}}).eachLayer(l=>{const n=l.feature.properties.CITY;(cityLayers[n]||cityG).addLayer(l);if(CITY_STYLE[n]&&CITY_STYLE[n].weight===5)l.bringToBack();});
+ }).catch(()=>{L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],[34.0,-117.65],[34.0,-117.683]],{color:'#FFD600',weight:3,dashArray:'6 4',fill:false}).addTo(cityLayers['Ontario']);});
 
 L.marker([34.0108,-117.6040],{icon:L.divIcon({className:'',html:'<div class="sem" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(map).bindPopup(`<h2><a href="https://www.ontarioca.gov/news/ontario-unveils-southern-californias-largest-sports-and-entertainment-district" target="_blank" rel="noopener">Ontario Sports Empire</a></h2><p class="addr">Riverside Dr at Vineyard Ave, Ontario. 200-acre sports and entertainment district, 10 minutes from ONT.<br><a href="https://www.google.com/maps/search/?api=1&query=Ontario+Sports+Empire%2C+Ontario%2C+California" target="_blank" rel="noopener">Open in Google Maps</a></p><a href="img/ontario-sports-empire-site-plan.jpg" target="_blank" rel="noopener"><img class="splan" src="img/ontario-sports-empire-site-plan.jpg" alt="Ontario Sports Empire site plan rendering" loading="lazy"></a><p class="seas"><i>What is planned</i>ONT Field, a 6,500-seat Minor League baseball stadium (opened April 2026); 8 full-size soccer fields and multi-use fields; 8 baseball and softball diamonds, 2 championship fields; recreation and aquatics center; 227-room full-service hotel and Stadium Village retail; two parking structures. Community sports complex opening October 2026.</p><p class="seas"><i>Source</i>Site plan rendering: <a href="https://rjmdesigngroup.com/ontario-sports-empire/" target="_blank" rel="noopener">RJM Design Group, Ontario Sports Empire</a>. Program and dates: <a href="https://www.ontarioca.gov/news/ontario-unveils-southern-californias-largest-sports-and-entertainment-district" target="_blank" rel="noopener">City of Ontario, Aug 21, 2025</a>.</p><p class="note">Rendering is the designer's concept plan; final build may differ. Tap the image to open it full size.</p>`,{maxWidth:320,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 L.marker([34.0631,-117.6080],{icon:L.divIcon({className:'',html:'<div class="wvm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(map).bindPopup(`<h2><a href="https://www.gosbcta.com/project/west-valley-connector-brt/" target="_blank" rel="noopener">West Valley Connector BRT</a></h2><p class="addr">Omnitrans sbX bus rapid transit, Pomona Transit Center to ONT, Ontario Mills, Rancho Cucamonga Metrolink and Victoria Gardens, mainly along Holt Blvd.</p><a href="https://www.gosbcta.com/wp-content/uploads/2019/09/West-Valley-Connector-Center-Running-Station-Rendering-2-1536x864.jpg" target="_blank" rel="noopener"><img class="splan" src="https://www.gosbcta.com/wp-content/uploads/2019/09/West-Valley-Connector-Center-Running-Station-Rendering-2-1536x864.jpg" alt="West Valley Connector center-running station rendering" loading="lazy" onerror="this.parentNode.style.display='none'"></a><p class="seas"><i>Project</i>Phase I: 19 miles, 21 stations, 3.5 miles of center-running bus-only lanes on Holt, 100 percent zero-emission fleet; replaces Route 61 service on the corridor; 10-minute peak and 15-minute off-peak headways. Groundbreaking Oct 2023; opening was planned for fall 2026 and is now reported for 2027.</p><p class="seas"><i>Official links</i><a href="https://www.gosbcta.com/project/west-valley-connector-brt/" target="_blank" rel="noopener">SBCTA project page</a> &middot; <a href="https://omnitrans.org/wvc_may_update/" target="_blank" rel="noopener">Omnitrans construction update</a> &middot; <a href="https://www.transit.dot.gov/funding/grant-programs/capital-investments/west-valley-connector-bus-rapid-transit-project-profile" target="_blank" rel="noopener">FTA project profile</a></p><p class="note">Rendering from SBCTA, shown from their site. Marker placed on the Holt Blvd corridor, not at a specific station.</p>`,{maxWidth:320,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
@@ -241,8 +244,8 @@ function schedHTML(slug){const c=TRANSIT.schedule&&TRANSIT.schedule[slug];if(!c)
  t+=`<details class="sch"><summary>Session list</summary><div>${c.list.map(l=>`<span>${l[0]} &middot; ${l[1]} &middot; ${l[2]?l[2]+', ':''}${l[3]}</span>`).join('')}</div></details></p>`;return t;}
 TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:'<div class="vm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(laG).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no attendance figures.</p>`,{maxWidth:300});});
 const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
-tog('tRail',railG);tog('tCity',cityG);tog('tML',mlG);tog('tLA28',laG);
-const ovCbs=['tRail','tML','tLA28','tCity'].map(id=>document.getElementById(id));const ovAll=document.getElementById('tAllOverlays');
+tog('tRail',railG);tog('tML',mlG);tog('tLA28',laG);
+const ovCbs=['tRail','tML','tLA28'].map(id=>document.getElementById(id));const ovAll=document.getElementById('tAllOverlays');
 function syncOv(){const n=ovCbs.filter(c=>c.checked).length;ovAll.checked=n===ovCbs.length;ovAll.indeterminate=n>0&&n<ovCbs.length;}
 ovCbs.forEach(cb=>cb.addEventListener('change',syncOv));
 ovAll.onchange=e=>{ovCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.onchange({target:cb});}});syncOv();};
