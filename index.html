@@ -7,10 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="rates_history.js?v=1792398600"></script>
-<script src="la_transit.js?v=1792398600"></script>
-<script src="neighbors.js?v=1792398600"></script>
-<script src="connectors.js?v=1792398600"></script>
+<script src="rates_history.js?v=1792400386"></script>
+<script src="la_transit.js?v=1792400386"></script>
+<script src="neighbors.js?v=1792400386"></script>
+<script src="connectors.js?v=1792400386"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -85,6 +85,8 @@
   .bib i{font-style:italic}
   .bib a{color:#1f4e79;word-break:break-all}
   .cite{color:#1f4e79;text-decoration:none;font-size:.9em}
+  details.seas{margin:6px 0 0;padding:0}details.seas>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-style:italic;color:#5f5b50;font-size:.85rem;padding:5px 0 3px;border-top:1px solid #d8d3c5}details.seas>summary::-webkit-details-marker{display:none}details.seas>summary::before{content:'\25B8';font-style:normal;font-size:.8rem;color:#1f4e79}details[open].seas>summary::before{content:'\25BE'}details.seas>summary>i{font-style:italic}details.seas>.sb{padding:0 0 4px}
+  .foldbar{display:flex;gap:6px;justify-content:flex-end;margin:4px 0 0}.foldbar button{font:inherit;font-size:.72rem;padding:1px 7px;border:1px solid #c9c3b3;background:#fff;border-radius:3px;cursor:pointer;color:#1f4e79}
 </style>
 </head>
 <body>
@@ -412,6 +414,17 @@ function makeSection(masterId){const m=document.getElementById(masterId);if(!m)r
  const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
  b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
 ['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);Object.keys(COUNTY).forEach(k=>makeSection('oc_'+k.toLowerCase().replace(/ /g,'-')+'_all'));
+
+/* collapsible card sections: each <p class="seas"><i>Label</i>...</p> becomes a fold-out; collapsed by default on phones */
+function foldSections(el){if(!el||el.dataset.folded)return;el.dataset.folded='1';const small=window.innerWidth<=700;el.querySelectorAll('p.seas').forEach(p=>{if(!(p.firstElementChild&&p.firstElementChild.tagName==='I')){const i=document.createElement('i');i.textContent='About';p.prepend(i);}});const ps=[...el.querySelectorAll('p.seas')].filter(p=>p.firstElementChild&&p.firstElementChild.tagName==='I');
+ if(ps.length<2)return;
+ ps.forEach(p=>{const lab=p.firstElementChild;const d=document.createElement('details');d.className='seas';if(!small)d.open=true;const sm=document.createElement('summary');sm.appendChild(lab);d.appendChild(sm);const body=document.createElement('div');body.className='sb';while(p.firstChild)body.appendChild(p.firstChild);d.appendChild(body);
+  let nx=p.nextElementSibling;while(nx&&(nx.tagName==='TABLE'||(nx.tagName==='P'&&nx.className==='note'&&nx.nextElementSibling&&nx.nextElementSibling.className==='seas'))){const t=nx;nx=nx.nextElementSibling;body.appendChild(t);}
+  p.replaceWith(d);});
+ const bar=document.createElement('div');bar.className='foldbar';bar.innerHTML='<button type="button" data-f="1">Expand all</button><button type="button" data-f="0">Collapse all</button>';
+ bar.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.querySelectorAll('details.seas').forEach(d=>d.open=b.dataset.f==='1');});
+ const h=el.querySelector('h2');(h&&h.parentNode===el)?h.after(bar):el.prepend(bar);}
+map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');foldSections(el);});
 </script>
 </body>
 </html>
