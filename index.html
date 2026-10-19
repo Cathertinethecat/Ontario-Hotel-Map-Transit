@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792445872"></script>
-<script src="la_transit.js?v=1792445872"></script>
-<script src="neighbors.js?v=1792445872"></script>
-<script src="connectors.js?v=1792445872"></script>
+<script src="rates_history.js?v=1792446459"></script>
+<script src="la_transit.js?v=1792446459"></script>
+<script src="neighbors.js?v=1792446459"></script>
+<script src="connectors.js?v=1792446459"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -102,6 +102,7 @@
   @media (max-width:700px){.rpanel{top:auto;height:60%;left:10px;right:10px;width:auto}}
   .ct .lst{text-decoration:underline;cursor:pointer;margin-left:4px}
   .oclist{font-size:.75rem;color:#1f4e79;text-decoration:underline;cursor:pointer;margin-left:4px}
+  .tier{border-bottom:1px dotted #1f4e79;cursor:help}.tiernote{display:block;font-size:.78rem;color:#5f5b50;background:#f6f3ea;border:1px solid #d8d3c5;border-radius:3px;padding:4px 6px;margin:3px 0}
 </style>
 </head>
 <body>
@@ -131,20 +132,20 @@
     <label><input type="checkbox" data-vt="D" checked> <span style="color:#9e9e9e;font-size:.85em">&#9673;</span> Under 5,000</label>
     <label><input type="checkbox" data-vt="U" checked> <span style="color:#777;font-size:.85em">&#9711;</span> Not yet published</label></div>
   <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Ontario hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
-    <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
-    <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
-    <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
-    <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
+    <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> <span class="tier" data-tier="full">Full service</span></label>
+    <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> <span class="tier" data-tier="select">Select service</span></label>
+    <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> <span class="tier" data-tier="ext">Extended stay</span></label>
+    <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> <span class="tier" data-tier="econ">Economy</span></label>
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
     <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="onExpand">Spread Ontario</button><button type="button" id="onCollapse">Gather Ontario</button><button type="button" id="onList">Ontario hotel list</button></div>
   </div>
   <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other counties' hotels</b> <span style="color:#5f5b50">(by county, nearest first)</span></label>
     <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="ocExpand">Spread all</button><button type="button" id="ocCollapse">Gather all</button></div>
     <div style="width:100%;color:#5f5b50;font-size:.8rem;margin-top:4px">Tier filter for all other cities</div>
-    <label><input type="checkbox" data-otier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
-    <label><input type="checkbox" data-otier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
-    <label><input type="checkbox" data-otier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
-    <label><input type="checkbox" data-otier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
+    <label><input type="checkbox" data-otier="full" checked> <span style="color:#b3412f">&#9679;</span> <span class="tier" data-tier="full">Full service</span></label>
+    <label><input type="checkbox" data-otier="select" checked> <span style="color:#c98a1c">&#9679;</span> <span class="tier" data-tier="select">Select service</span></label>
+    <label><input type="checkbox" data-otier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> <span class="tier" data-tier="ext">Extended stay</span></label>
+    <label><input type="checkbox" data-otier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> <span class="tier" data-tier="econ">Economy</span></label>
     <div id="countyBox" style="width:100%"></div></div>
   <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
   <p class="note" id="connLegend"></p>
@@ -202,6 +203,14 @@
 <script>
 const TMD=5461;
 const CAT={full:{c:'#b3412f',l:'Full service / convention'},select:{c:'#c98a1c',l:'Select service'},ext:{c:'#2f7d4e',l:'Extended stay'},econ:{c:'#6b5ea8',l:'Economy'},plan:{c:'#b3412f',l:'Planned'}};
+const TIER_DEF={full:'Full service: a restaurant, bar and meeting or banquet space on site, usually 150 or more rooms and staffed around the clock. Convention and airport hotels; the kind of property that hosts team delegations and conferences.',
+ select:'Select service: a mid-priced hotel with limited food (free breakfast or a small market) and one or two small meeting rooms rather than a restaurant and banquet hall. Hampton Inn, Courtyard, Holiday Inn Express, Fairfield Inn and similar brands.',
+ ext:'Extended stay: suites with kitchens and weekly rates, built for guests staying a week or more. Residence Inn, Home2, Extended Stay America, Staybridge and similar brands.',
+ econ:'Economy: motels and budget inns with few or no amenities beyond the room, often exterior corridors. Motel 6, Super 8, Rodeway, Days Inn and independent motels.',
+ plan:'Planned: a hotel that has been announced or approved but is not yet open; room count is the developer\'s figure.'};
+const tierTag=(t,label)=>`<span class="tier" data-tier="${t}" title="${TIER_DEF[t]||''}">${label||(CAT[t]?CAT[t].l.split(' / ')[0]:t)}</span>`;
+document.querySelectorAll('.tier[data-tier]').forEach(el=>{if(!el.title)el.title=TIER_DEF[el.dataset.tier]||'';});
+document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('.tier');if(!el)return;e.preventDefault();e.stopPropagation();const nx=el.nextElementSibling;if(nx&&nx.classList.contains('tiernote')){nx.remove();return;}const d=document.createElement('span');d.className='tiernote';d.textContent=TIER_DEF[el.dataset.tier]||'';el.after(d);});
 const SRC={
  sm:{l:'Successful Meetings, Ontario CA hotel directory',u:'https://www.successfulmeetings.com/Meeting-Event-Venues/Ontario-CA/Hotels'},
  eng:{l:'Engine, Ontario conference hotels',u:'https://engine.com/hotels/ontario-ca/conference'},
@@ -347,7 +356,7 @@ H.forEach(h=>{
   const icon=L.divIcon({className:'',html:`<div class="mk${h.plan?' plan':''}" style="width:${d}px;height:${d}px;${h.plan?'':'background:'+CAT[h.t].c}">${h.r==null?'?':h.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
   const share=(h.plan||h.r==null)?'n/a':(100*h.r/TMD).toFixed(1)+'%';
   const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
-  const hm=L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]);h._m=hm;hm._rdata=h;h.a2=h.a+', Ontario, CA';hm.bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
+  const hm=L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]);h._m=hm;hm._rdata=h;h.a2=h.a+', Ontario, CA';hm.bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${(()=>{const m=h.cls.match(/^(Full service|Select service|Extended stay|Economy( motel)?|Upscale|Planned)/i);return m?tierTag(h.t,m[0])+h.cls.slice(m[0].length):h.cls;})()}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
    <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
    ${ratesHTML(h)}${histHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
@@ -417,7 +426,7 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const nm=x.web?`<a href="${x.web}" target="_blank" rel="noopener">${x.n}</a>`:x.n;
  const meet=x.m==null?'n/a':x.m.toLocaleString();
  const book=x.web?`<a href="${x.web}" target="_blank" rel="noopener">Check live rates</a>`:'';
- const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);x._m=xm;xm._rdata=x;x.a2=x.a+(x.a.includes(x.c)?'':', '+x.c)+', CA';xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>${(typeof RATES_HIST!=="undefined"&&RATES_HIST.some(e=>e.rates&&e.rates[x.n]))?histHTML(x):'No rate snapshot yet for this property. '}${book}${book?' &middot; ':''}<a href="https://www.google.com/travel/hotels?q=${encodeURIComponent(x.n+', '+x.c+', CA')}" target="_blank" rel="noopener">Compare rates on Google Hotels</a></p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
+ const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);x._m=xm;xm._rdata=x;x.a2=x.a+(x.a.includes(x.c)?'':', '+x.c)+', CA';xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${tierTag(x.t)}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${tierTag(x.t)}</b><span>Tier (tap for definition)</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>${(typeof RATES_HIST!=="undefined"&&RATES_HIST.some(e=>e.rates&&e.rates[x.n]))?histHTML(x):'No rate snapshot yet for this property. '}${book}${book?' &middot; ':''}<a href="https://www.google.com/travel/hotels?q=${encodeURIComponent(x.n+', '+x.c+', CA')}" target="_blank" rel="noopener">Compare rates on Google Hotels</a></p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
 const otCbs=[...ocBox.querySelectorAll('input[data-otier]')];const ocCityCbs=[...countyBox.querySelectorAll('input[data-ocity]')];const ocAll=document.getElementById('tAllOther');
 const cityCb=c=>ocCityCbs.find(x=>x.dataset.ocity===c);
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
@@ -521,7 +530,7 @@ function renderRoster(){const city=rpCity;if(!city)return;const rows=cityRows(ci
  const em=rows.find(r=>r._err&&r._err.includes(':'));if(em&&!(pg&&pg.done<pg.total))sub+=' Google says: '+em._err.split(':').slice(1).join(':').trim();
  document.getElementById('rpSub').textContent=sub;
  const rb=document.getElementById('rpRetry');rb.style.display=(miss&&!(pg&&pg.done<pg.total))?'':'none';
- document.getElementById('rpList').innerHTML=rs.map(r=>`<a data-n="${encodeURIComponent(r.n)}"><span class="nm">${r.n}</span><span class="rt">${r.grt!=null?((r.grc||0)<20?'<span style="color:#9e9e9e">'+r.grt+'</span>':r.grt)+' <small>('+(r.grc||0).toLocaleString()+')</small>':(r._miss==='nomatch'?'<small>no Google match</small>':r._miss==='error'?'<small title="'+(r._err||'').replace(/"/g,'')+'">lookup failed'+(r._err?' ('+r._err.replace('places ','').split(':')[0]+')':'')+'</small>':r._live?'<small>no rating</small>':'<small>&hellip;</small>')}${r.gp?' <small>'+r.gp+'</small>':''}</span><span class="cu">${CAT[r.t]?CAT[r.t].l.split(' / ')[0]:''}${r.r!=null?', '+r.r+' rooms':''}${r.m&&r.m!=='n/a'&&r.m!=='0'?', '+r.m+' sq ft meeting':''}</span></a>`).join('');
+ document.getElementById('rpList').innerHTML=rs.map(r=>`<a data-n="${encodeURIComponent(r.n)}"><span class="nm">${r.n}</span><span class="rt">${r.grt!=null?((r.grc||0)<20?'<span style="color:#9e9e9e">'+r.grt+'</span>':r.grt)+' <small>('+(r.grc||0).toLocaleString()+')</small>':(r._miss==='nomatch'?'<small>no Google match</small>':r._miss==='error'?'<small title="'+(r._err||'').replace(/"/g,'')+'">lookup failed'+(r._err?' ('+r._err.replace('places ','').split(':')[0]+')':'')+'</small>':r._live?'<small>no rating</small>':'<small>&hellip;</small>')}${r.gp?' <small>'+r.gp+'</small>':''}</span><span class="cu">${CAT[r.t]?tierTag(r.t):''}${r.r!=null?', '+r.r+' rooms':''}${r.m&&r.m!=='n/a'&&r.m!=='0'?', '+r.m+' sq ft meeting':''}</span></a>`).join('');
  document.querySelectorAll('#rpanel [data-rs]').forEach(b=>b.classList.toggle('on',b.dataset.rs===rpSort));
  document.querySelectorAll('#rpList a').forEach(a=>a.onclick=()=>{const r=rows.find(x=>x.n===decodeURIComponent(a.dataset.n));if(!r)return;showHotel(city,r);if(window.innerWidth<=700)rp.classList.remove('open');});}
 function showHotel(city,r){const st=ocState[city];if(st){st.expanded=true;}
