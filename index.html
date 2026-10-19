@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792440305"></script>
-<script src="la_transit.js?v=1792440305"></script>
-<script src="neighbors.js?v=1792440305"></script>
-<script src="connectors.js?v=1792440305"></script>
+<script src="rates_history.js?v=1792444431"></script>
+<script src="la_transit.js?v=1792444431"></script>
+<script src="neighbors.js?v=1792444431"></script>
+<script src="connectors.js?v=1792444431"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -94,10 +94,19 @@
   @media (max-width:700px){.leaflet-popup-content{max-height:55vh;max-width:min(300px,calc(100vw - 50px))!important}.hphoto{aspect-ratio:21/9}.leaflet-popup{margin-bottom:28px}}
   .bib.dp{list-style:disc;padding-left:16px;margin:0 0 4px}.bib.dp li{margin:0 0 4px;font-size:.78rem;line-height:1.35}
   .astamp{margin:8px 0 0;padding-top:6px;border-top:1px solid #d8d3c5;font-size:.72rem;color:#5f5b50}.astamp a{color:#1f4e79;cursor:pointer;text-decoration:underline}.astamp .ax{display:none;margin-top:4px;line-height:1.4}.astamp.open .ax{display:block}
+  .rpanel{position:absolute;top:10px;right:10px;bottom:10px;width:min(340px,calc(100% - 20px));background:rgba(250,248,242,.97);border:1px solid #c9c3b3;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.35);z-index:1200;display:none;flex-direction:column;font-family:"Times New Roman",Times,serif}
+  .rpanel.open{display:flex}.rpanel .rh{padding:8px 10px 6px;border-bottom:1px solid #d8d3c5}.rpanel .rh h2{margin:0 24px 2px 0;font-size:1rem;color:#1f2a3a}.rpanel .rh .sub{color:#5f5b50;font-size:.8rem}
+  .rpanel .rx{position:absolute;top:6px;right:8px;border:none;background:none;font-size:1.2rem;cursor:pointer;color:#5f5b50}
+  .rpanel .rsort{display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #d8d3c5;flex-wrap:wrap}.rpanel .rsort button{font:inherit;font-size:.78rem;padding:2px 8px;border:1px solid #c9c3b3;background:#fff;border-radius:3px;cursor:pointer}.rpanel .rsort button.on{background:#1f4e79;color:#fff;border-color:#1f4e79}
+  .rpanel .rl{overflow:auto;flex:1;padding:4px 0}.rpanel .rl a{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:5px 10px;text-decoration:none;color:#1f2a3a;border-bottom:1px solid #ebe7db;cursor:pointer}.rpanel .rl a:hover{background:#f1ede2}.rpanel .rl .nm{font-weight:700;color:#1f4e79}.rpanel .rl .cu{color:#5f5b50;font-size:.78rem;grid-column:1}.rpanel .rl .rt{text-align:right;font-size:.85rem;white-space:nowrap}.rpanel .rl .rt small{color:#5f5b50}
+  @media (max-width:700px){.rpanel{top:auto;height:60%;left:10px;right:10px;width:auto}}
+  .ct .lst{text-decoration:underline;cursor:pointer;margin-left:4px}
+  .oclist{font-size:.75rem;color:#1f4e79;text-decoration:underline;cursor:pointer;margin-left:4px}
 </style>
 </head>
 <body>
 <div id="map"></div>
+<div class="rpanel" id="rpanel"><div class="rh"><h2 id="rpTitle"></h2><div class="sub" id="rpSub"></div><button class="rx" id="rpClose" aria-label="close">&times;</button><div class="btns" style="margin-top:6px"><button type="button" id="rpBack">&#8592; Back to legend</button><button type="button" id="rpSpread">Spread on map</button><button type="button" id="rpRetry" style="display:none">Retry missing ratings</button></div></div><div class="rsort"><span style="font-size:.78rem;color:#5f5b50;align-self:center">Sort:</span><button data-rs="rt" class="on">Rating</button><button data-rs="rooms">Rooms</button><button data-rs="tier">Tier</button><button data-rs="az">A to Z</button></div><div class="rl" id="rpList"></div></div>
 <div class="panel" id="panel">
   <h1 id="ptog">Legend <small id="pind">tap for legend &amp; controls</small></h1>
   <div class="body">
@@ -108,6 +117,7 @@
   </div>
   <div class="btns">
     <label><input type="checkbox" id="sat" checked> Satellite</label>
+    <div style="width:100%;font-size:.78rem;margin-top:2px"><a href="#" id="gcheck">Check Google connection</a><div id="gcheckOut" style="color:#5f5b50;white-space:pre-wrap"></div></div>
     <label style="width:100%;padding:2px 0;border:none;background:none"><input type="checkbox" id="tAllOverlays" checked> <b style="font-size:.85rem">Transit</b> <span style="color:#5f5b50">(Metro rail, Metrolink)</span></label>
     <label><input type="checkbox" id="tRail" checked> Metro rail</label>
     <label><input type="checkbox" id="tML" checked> Metrolink</label>
@@ -126,7 +136,7 @@
     <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
     <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
-    <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="onExpand">Spread Ontario</button><button type="button" id="onCollapse">Gather Ontario</button></div>
+    <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="onExpand">Spread Ontario</button><button type="button" id="onCollapse">Gather Ontario</button><button type="button" id="onList">Ontario hotel list</button></div>
   </div>
   <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other counties' hotels</b> <span style="color:#5f5b50">(by county, nearest first)</span></label>
     <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="ocExpand">Spread all</button><button type="button" id="ocCollapse">Gather all</button></div>
@@ -148,7 +158,7 @@
     <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px dashed #b3412f;color:#b3412f;font-size:9px;line-height:12px;text-align:center;vertical-align:middle">?</span> Dashed outline = planned hotel, not yet open</div>
     <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c98a1c;outline:1.5px dashed #1d1c19;vertical-align:middle"></span> Dark dashed ring = hotel outside Ontario</div>
     <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c98a1c;vertical-align:middle"></span> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#c98a1c;vertical-align:middle"></span> Bigger marker = more rooms</div>
-    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#1f4e79;color:#fff;font-size:9px;line-height:14px;text-align:center;vertical-align:middle">12</span> City dot: number of hotels in that city; tap to spread them out</div>
+    <div style="font-size:.78rem;line-height:1.5"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#1f4e79;color:#fff;font-size:9px;line-height:14px;text-align:center;vertical-align:middle">12</span> City dot: number of hotels in that city; tap the circle to spread them out, tap "list" for a sortable list with live Google ratings</div>
     <div style="font-size:.78rem;line-height:1.5;margin-top:4px"><b>Other markers</b> &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fff;border:2px solid #2f7d4e;vertical-align:middle"></span> Ontario Sports Empire &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #6a3fb5;vertical-align:middle"></span> West Valley Connector BRT &nbsp; <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #d4a017;vertical-align:middle"></span> LA28 venue (larger = bigger capacity)</div>
     <div style="font-size:.78rem;line-height:1.5">Basemap: Google Maps (satellite or street). <span style="color:#FFD600;font-weight:700">&#9644;</span> City limits, one color per city &nbsp; <span style="color:#9e9e9e;font-weight:700">&#9638;</span> Unincorporated county land</div>
   </div>
@@ -337,7 +347,7 @@ H.forEach(h=>{
   const icon=L.divIcon({className:'',html:`<div class="mk${h.plan?' plan':''}" style="width:${d}px;height:${d}px;${h.plan?'':'background:'+CAT[h.t].c}">${h.r==null?'?':h.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
   const share=(h.plan||h.r==null)?'n/a':(100*h.r/TMD).toFixed(1)+'%';
   const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
-  const hm=L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]);hm._rdata={n:h.n,a:h.a+', Ontario, CA',lat:h.lat,lng:h.lng};hm.bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
+  const hm=L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]);h._m=hm;hm._rdata=h;h.a2=h.a+', Ontario, CA';hm.bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
    <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
    ${ratesHTML(h)}${histHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
@@ -395,7 +405,7 @@ const OG={};OC_OTHER.forEach(c=>{OG[c]={};['full','select','ext','econ'].forEach
 const countyBox=document.getElementById('countyBox');const CSTATE={};
 Object.keys(COUNTY).forEach(k=>{const slug=k.toLowerCase().replace(/ /g,'-');const cities=COUNTY[k];const n=cities.reduce((a,c)=>a+NH.filter(x=>x.c===c).length,0);
  const div=document.createElement('div');div.className='oc';div.id='oc_'+slug;
- div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${k}</b> <span style="color:#5f5b50">(${cities.length} cities, ${n} hotels)</span></label><div class="btns" style="margin:2px 0 4px;width:100%"><button type="button" data-cx="${k}">Spread</button><button type="button" data-cg="${k}">Gather</button></div>`+cities.map(c=>`<label><input type="checkbox" data-ocity="${c}" checked> ${c} <span style="color:#5f5b50">(${NH.filter(x=>x.c===c).length})</span></label>`).join('');
+ div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${k}</b> <span style="color:#5f5b50">(${cities.length} cities, ${n} hotels)</span></label><div class="btns" style="margin:2px 0 4px;width:100%"><button type="button" data-cx="${k}">Spread</button><button type="button" data-cg="${k}">Gather</button></div>`+cities.map(c=>`<label><input type="checkbox" data-ocity="${c}" checked> ${c} <span style="color:#5f5b50">(${NH.filter(x=>x.c===c).length})</span><span class="oclist" data-ol="${c}">list</span></label>`).join('');
  countyBox.appendChild(div);CSTATE[k]={all:div.querySelector('#oc_'+slug+'_all'),cbs:[...div.querySelectorAll('input[data-ocity]')]};
  div.querySelector('[data-cx]').onclick=()=>cities.forEach(c=>{if(ocState[c]){ocState[c].expanded=true;refreshCity(c);}});
  div.querySelector('[data-cg]').onclick=()=>cities.forEach(c=>{if(ocState[c]){ocState[c].expanded=false;refreshCity(c);}});});
@@ -407,7 +417,7 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const nm=x.web?`<a href="${x.web}" target="_blank" rel="noopener">${x.n}</a>`:x.n;
  const meet=x.m==null?'n/a':x.m.toLocaleString();
  const book=x.web?`<a href="${x.web}" target="_blank" rel="noopener">Check live rates</a>`:'';
- const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);xm._rdata={n:x.n,a:x.a+', CA',lat:x.lat,lng:x.lng};xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
+ const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);x._m=xm;xm._rdata=x;x.a2=x.a+(x.a.includes(x.c)?'':', '+x.c)+', CA';xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
 const otCbs=[...ocBox.querySelectorAll('input[data-otier]')];const ocCityCbs=[...countyBox.querySelectorAll('input[data-ocity]')];const ocAll=document.getElementById('tAllOther');
 const cityCb=c=>ocCityCbs.find(x=>x.dataset.ocity===c);
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
@@ -418,10 +428,10 @@ OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter
  const lat=hs.reduce((a,x)=>a+x.lat,0)/hs.length,lng=hs.reduce((a,x)=>a+x.lng,0)/hs.length;
  const byT={};hs.forEach(x=>byT[x.t]=(byT[x.t]||0)+(x.r||60));const top=Object.keys(byT).sort((a,b)=>byT[b]-byT[a])[0]||'select';
  const d=Math.min(48,Math.round(18+Math.sqrt(rooms||120)*0.9));const w=Math.max(d,150);
- const dot=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div class="cdot" style="width:${w}px;height:${d+22}px"><div class="mk${city==='Ontario'?'':' oth'}" style="width:${d}px;height:${d}px;background:${CAT[top].c}">${rooms||'?'}</div><div class="ct" style="top:${d+2}px">${city} &middot; ${hs.length} hotels</div></div>`,iconSize:[w,d+22],iconAnchor:[w/2,d/2]}),zIndexOffset:500});
+ const dot=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div class="cdot" style="width:${w}px;height:${d+22}px"><div class="mk${city==='Ontario'?'':' oth'}" style="width:${d}px;height:${d}px;background:${CAT[top].c}">${rooms||'?'}</div><div class="ct" style="top:${d+2}px">${city} &middot; ${hs.length} hotels<span class="lst" data-ol="${city}">list</span></div></div>`,iconSize:[w,d+22],iconAnchor:[w/2,d/2]}),zIndexOffset:500});
  dot.bindTooltip(`${city}: ${hs.length} hotels, ${rooms.toLocaleString()} rooms${known<hs.length?' counted ('+(hs.length-known)+' without a count)':''}. Tap to spread.`,{direction:'top',offset:[0,-d/2]});
  const lbl=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div class="cgather">${city}: gather hotels</div>`,iconSize:[140,18],iconAnchor:[70,9]}),zIndexOffset:500});
- dot.on('click',()=>{ocState[city].expanded=true;refreshCity(city);});lbl.on('click',()=>{ocState[city].expanded=false;refreshCity(city);});
+ dot.on('click',e=>{const t=e.originalEvent&&e.originalEvent.target;if(t&&t.dataset&&t.dataset.ol){L.DomEvent.stop(e.originalEvent);openHotelRoster(city);return;}ocState[city].expanded=true;refreshCity(city);});lbl.on('click',()=>{ocState[city].expanded=false;refreshCity(city);});
  ocState[city]={expanded:false,dot,lbl};});
 window.setCityCenter=(city,ll)=>{const st=ocState[city];if(!st)return;st.dot.setLatLng(ll);st.lbl.setLatLng(ll);};
 function refreshCity(city){const st=ocState[city];if(!st)return;
@@ -466,9 +476,11 @@ map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().query
 
 /* live Google data on cards (Places API, New): rating, review count, price and the current photo are fetched when a card opens, shown with a Google link, never stored */
 const PLACE_CACHE={};const PRICE={PRICE_LEVEL_FREE:'Free',PRICE_LEVEL_INEXPENSIVE:'$',PRICE_LEVEL_MODERATE:'$$',PRICE_LEVEL_EXPENSIVE:'$$$',PRICE_LEVEL_VERY_EXPENSIVE:'$$$$'};
-async function livePlace(name,addr,lat,lng){const k=name+'|'+addr;if(PLACE_CACHE[k]!==undefined)return PLACE_CACHE[k];
- const res=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GKEY,'X-Goog-FieldMask':'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.businessStatus,places.photos'},body:JSON.stringify({textQuery:name+', '+addr,maxResultCount:1,locationBias:{circle:{center:{latitude:lat,longitude:lng},radius:1500}}})});
- if(!res.ok)throw new Error('places '+res.status);const j=await res.json();const pl=(j.places||[])[0]||null;PLACE_CACHE[k]=pl;return pl;}
+async function livePlace(name,addr,lat,lng,radius,attempt){const k=name+'|'+addr+'|'+(radius||'');if(PLACE_CACHE[k]!==undefined)return PLACE_CACHE[k];
+ const res=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GKEY,'X-Goog-FieldMask':'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.businessStatus,places.photos'},body:JSON.stringify({textQuery:name+', '+addr,maxResultCount:1,locationBias:{circle:{center:{latitude:lat,longitude:lng},radius:radius||1500}}})});
+ if(!res.ok){let msg='places '+res.status;try{const ej=await res.json();if(ej.error&&ej.error.status)msg+=' '+ej.error.status;if(ej.error&&ej.error.message){msg+=': '+ej.error.message;console.warn('Google Places error',ej.error.message);}}catch(_){}
+  if((res.status===429||res.status===503)&&(attempt||0)<3){await new Promise(r=>setTimeout(r,1500*((attempt||0)+1)));return livePlace(name,addr,lat,lng,radius,(attempt||0)+1);}throw new Error(msg);}
+ const j=await res.json();const pl=(j.places||[])[0]||null;PLACE_CACHE[k]=pl;return pl;}
 function esc(t){return String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function livePhotoInto(el,pl){const ph=(pl.photos||[])[0];if(!ph||!ph.name)return;const url=`https://places.googleapis.com/v1/${ph.name}/media?maxWidthPx=640&key=${GKEY}`;
  let img=el.querySelector('img.hphoto');const fresh=!img;if(!img){img=document.createElement('img');img.className='hphoto';img.alt='';img.loading='lazy';el.insertBefore(img,el.firstChild);}
@@ -476,7 +488,7 @@ function livePhotoInto(el,pl){const ph=(pl.photos||[])[0];if(!ph||!ph.name)retur
  const au=(ph.authorAttributions||[])[0];const cap=document.createElement('div');cap.className='note';cap.style.cssText='margin:-4px 0 6px;font-size:.72rem';cap.innerHTML='Photo: Google Maps'+(au?', <a href="'+esc(au.uri)+'" target="_blank" rel="noopener">'+esc(au.displayName)+'</a>':'')+', loaded live';img.after(cap);}
 function liveRatingInto(el,x){if(!el||el.dataset.live)return;el.dataset.live='1';const kv=el.querySelector('.kv');if(!kv)return;
  const note=document.createElement('div');note.className='note';note.style.margin='2px 0 0';note.innerHTML='<span style="color:#5f5b50">Checking Google for the live rating&hellip;</span>';kv.after(note);
- livePlace(x.n,x.a,x.lat,x.lng).then(pl=>{if(!pl){note.innerHTML='<span style="color:#5f5b50">No Google listing found for this name and address; figures above are from the sources cited.</span>';return;}
+ livePlace(x.n,x.a2||x.a,x.lat,x.lng).then(pl=>{if(!pl){note.innerHTML='<span style="color:#5f5b50">No Google listing found for this name and address; figures above are from the sources cited.</span>';return;}
   livePhotoInto(el,pl);
   const closed=pl.businessStatus&&pl.businessStatus!=='OPERATIONAL';const gl=`<a href="${esc(pl.googleMapsUri)}" target="_blank" rel="noopener">View on Google Maps</a>`;
   if(pl.rating==null){note.innerHTML='Google lists this place but shows no rating yet. '+gl;return;}
@@ -484,8 +496,56 @@ function liveRatingInto(el,x){if(!el||el.dataset.live)return;el.dataset.live='1'
  }).catch(e=>{note.innerHTML='<span style="color:#5f5b50">Live Google rating unavailable right now; figures above are from the sources cited.</span>';console.warn(e);});}
 map.on('popupopen',e=>{const p=e.popup;const el=p.getElement()&&p.getElement().querySelector('.leaflet-popup-content');if(!el)return;const src=p._source;let x=null;
  if(src&&src._rdata)x=src._rdata;else if(p._rdata)x=p._rdata;if(!x)return;liveRatingInto(el,x);});
-function MODE_HOOK(el,kv,note,pl,x,closed,gl){const row=document.createElement('div');row.className='kv';row.innerHTML=`<div><b>${pl.rating.toFixed(1)}</b><span>Rating (Google, live)</span></div><div><b>${(pl.userRatingCount||0).toLocaleString()}</b><span>Reviews (Google)</span></div><div><b style="font-size:1rem">${PRICE[pl.priceLevel]||'n/a'}</b><span>Price (Google)</span></div>`;kv.after(row);
+function MODE_HOOK(el,kv,note,pl,x,closed,gl){x.grt=pl.rating;x.grc=pl.userRatingCount||0;x.gp=PRICE[pl.priceLevel]||null;x._live=true;x._miss=false;const row=document.createElement('div');row.className='kv';row.innerHTML=`<div><b>${pl.rating.toFixed(1)}</b><span>Rating (Google, live)</span></div><div><b>${(pl.userRatingCount||0).toLocaleString()}</b><span>Reviews (Google)</span></div><div><b style="font-size:1rem">${PRICE[pl.priceLevel]||'n/a'}</b><span>Price (Google)</span></div>`;kv.after(row);
  note.innerHTML=`Rating, reviews and photo fetched live from Google Places just now; room count and meeting space above remain from the sources cited. ${gl}${closed?' <b style="color:#b3412f">Google lists this business as '+pl.businessStatus.toLowerCase().replace(/_/g,' ')+'.</b>':''}`;row.after(note);}
+/* hotel roster panel: per-city list with live Google ratings fetched for the whole city when opened */
+const rp=document.getElementById('rpanel');let rpCity=null,rpSort='rt';const LIVE_DONE={};let LIVE_PROG={};
+function cityRows(city){return city==='Ontario'?H.filter(x=>!x.plan):NH.filter(x=>x.c===city);}
+function liveCity(city,force){if((LIVE_DONE[city]&&!force)||typeof livePlace!=='function')return;LIVE_DONE[city]=true;
+ const rows=cityRows(city).filter(r=>!r._live||r._miss);let i=0,done=0;LIVE_PROG[city]={done:0,total:rows.length};
+ rows.forEach(r=>{if(r._miss){Object.keys(PLACE_CACHE).forEach(k=>{if(k.startsWith(r.n+'|'))delete PLACE_CACHE[k];});}});
+ let t=null;const bump=()=>{done++;LIVE_PROG[city].done=done;clearTimeout(t);t=setTimeout(()=>{if(rpCity===city)renderRoster();},done>=rows.length?0:400);};
+ const worker=async()=>{while(i<rows.length){const r=rows[i++];try{let pl=await livePlace(r.n,r.a2||r.a,r.lat,r.lng);
+   if(!pl||pl.rating==null){const alt=await livePlace(r.n.replace(/\s*\(.*?\)\s*/g,' ').trim(),(r.c||'Ontario')+', CA',r.lat,r.lng,6000);if(alt&&alt.rating!=null)pl=alt;}
+   if(pl&&pl.rating!=null){r.grt=pl.rating;r.grc=pl.userRatingCount||0;r.gp=PRICE[pl.priceLevel]||null;r._miss=false;}
+   else{r._miss=pl?'norating':'nomatch';}
+   r._live=true;}catch(e){r._miss='error';r._err=String(e.message||e);console.warn('live rating failed',r.n,e);}bump();}};
+ for(let k=0;k<3;k++)worker();if(rpCity===city)renderRoster();}
+const TIER_ORDER={full:0,select:1,ext:2,econ:3,plan:4};
+function renderRoster(){const city=rpCity;if(!city)return;const rows=cityRows(city);
+ const w=x=>x.grt==null?-1:(x.grc||0)<20?x.grt-10:x.grt;
+ const rs=rows.slice().sort((x,y)=>rpSort==='rt'?((w(y)-w(x))||(y.grc||0)-(x.grc||0)||x.n.localeCompare(y.n)):rpSort==='rooms'?(((y.r||0)-(x.r||0))||x.n.localeCompare(y.n)):rpSort==='tier'?((TIER_ORDER[x.t]-TIER_ORDER[y.t])||((y.r||0)-(x.r||0))||x.n.localeCompare(y.n)):x.n.localeCompare(y.n));
+ const pg=LIVE_PROG[city];const rated=rows.filter(r=>r.grt!=null).length;const miss=rows.filter(r=>r._miss).length;
+ document.getElementById('rpTitle').textContent=city+' hotels';
+ let sub=`${rows.length} hotels, ${rows.reduce((a,x)=>a+(x.r||0),0).toLocaleString()} rooms. `+(pg&&pg.done<pg.total?`Loading live Google ratings (${pg.done} of ${pg.total})`:rows.some(r=>r._live)?`${rated} rated live from Google`+(miss?` (${miss} not matched)`:''):'')+'. Tap a hotel to open its card.';
+ const em=rows.find(r=>r._err&&r._err.includes(':'));if(em&&!(pg&&pg.done<pg.total))sub+=' Google says: '+em._err.split(':').slice(1).join(':').trim();
+ document.getElementById('rpSub').textContent=sub;
+ const rb=document.getElementById('rpRetry');rb.style.display=(miss&&!(pg&&pg.done<pg.total))?'':'none';
+ document.getElementById('rpList').innerHTML=rs.map(r=>`<a data-n="${encodeURIComponent(r.n)}"><span class="nm">${r.n}</span><span class="rt">${r.grt!=null?((r.grc||0)<20?'<span style="color:#9e9e9e">'+r.grt+'</span>':r.grt)+' <small>('+(r.grc||0).toLocaleString()+')</small>':(r._miss==='nomatch'?'<small>no Google match</small>':r._miss==='error'?'<small title="'+(r._err||'').replace(/"/g,'')+'">lookup failed'+(r._err?' ('+r._err.replace('places ','').split(':')[0]+')':'')+'</small>':r._live?'<small>no rating</small>':'<small>&hellip;</small>')}${r.gp?' <small>'+r.gp+'</small>':''}</span><span class="cu">${CAT[r.t]?CAT[r.t].l.split(' / ')[0]:''}${r.r!=null?', '+r.r+' rooms':''}${r.m&&r.m!=='n/a'&&r.m!=='0'?', '+r.m+' sq ft meeting':''}</span></a>`).join('');
+ document.querySelectorAll('#rpanel [data-rs]').forEach(b=>b.classList.toggle('on',b.dataset.rs===rpSort));
+ document.querySelectorAll('#rpList a').forEach(a=>a.onclick=()=>{const r=rows.find(x=>x.n===decodeURIComponent(a.dataset.n));if(!r)return;showHotel(city,r);if(window.innerWidth<=700)rp.classList.remove('open');});}
+function showHotel(city,r){const st=ocState[city];if(st){st.expanded=true;}
+ if(city==='Ontario'){const cb=tierCbs.find(c=>c.dataset.tier===r.t);if(cb&&!cb.checked){cb.checked=true;}}
+ else{const cc=cityCb(city);if(cc&&!cc.checked){cc.checked=true;syncOc();}const tc=otCbs.find(c=>c.dataset.otier===r.t);if(tc&&!tc.checked){tc.checked=true;OC_OTHER.forEach(refreshCity);}}
+ refreshCity(city);map.setView([r.lat,r.lng],16);if(r._m)setTimeout(()=>r._m.openPopup(),150);}
+window.openHotelRoster=city=>{rpCity=city;rp.classList.add('open');map.closePopup();renderRoster();liveCity(city);if(window.innerWidth<=700)panel.classList.remove('open');};
+document.getElementById('rpBack').onclick=()=>{rp.classList.remove('open');panel.classList.add('open');document.getElementById('pind').textContent='tap to hide';};
+document.getElementById('rpClose').onclick=()=>rp.classList.remove('open');
+document.getElementById('rpRetry').onclick=()=>liveCity(rpCity,true);
+document.getElementById('rpSpread').onclick=()=>{const st=ocState[rpCity];if(!st)return;st.expanded=true;refreshCity(rpCity);const rows=cityRows(rpCity);if(rows.length)map.fitBounds(L.latLngBounds(rows.map(r=>[r.lat,r.lng])),{padding:[30,30],maxZoom:15});rp.classList.remove('open');};
+document.querySelectorAll('#rpanel [data-rs]').forEach(b=>b.onclick=()=>{rpSort=b.dataset.rs;renderRoster();});
+document.getElementById('onList').onclick=()=>openHotelRoster('Ontario');
+document.querySelectorAll('.oclist[data-ol]').forEach(e=>e.onclick=ev=>{ev.preventDefault();ev.stopPropagation();openHotelRoster(e.dataset.ol);});
+/* self-test: one Places lookup plus basemap status, printed in the legend */
+document.getElementById('gcheck').onclick=async e=>{e.preventDefault();const out=document.getElementById('gcheckOut');out.textContent='Testing...';const lines=[];
+ lines.push('Page: '+location.host+location.pathname);
+ lines.push('Maps JavaScript API: '+(window.google&&google.maps?'loaded':'not loaded')+(useGoogle?', Google basemap on':', using Esri/CARTO fallback'));
+ try{const res=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GKEY,'X-Goog-FieldMask':'places.displayName,places.rating,places.userRatingCount'},body:JSON.stringify({textQuery:'DoubleTree by Hilton Ontario Airport, Ontario, CA',maxResultCount:1})});
+  const txt=await res.text();let j={};try{j=JSON.parse(txt);}catch(_){}
+  if(res.ok){const pl=(j.places||[])[0];lines.push('Places API (New): OK, HTTP '+res.status+(pl?', found '+(pl.displayName&&pl.displayName.text)+' rated '+pl.rating+' ('+pl.userRatingCount+' reviews)':', no result'));}
+  else lines.push('Places API (New): HTTP '+res.status+' '+((j.error&&(j.error.status+': '+j.error.message))||txt.slice(0,300)));
+ }catch(err){lines.push('Places API (New): request failed before Google answered ('+err.message+')');}
+ out.textContent=lines.join('\n');};
 /* audit stamp on every card */
 const AUDIT_DATE='October 19, 2026';
 function auditStamp(el){if(!el||el.querySelector('.astamp'))return;const d=document.createElement('div');d.className='astamp';
