@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792444431"></script>
-<script src="la_transit.js?v=1792444431"></script>
-<script src="neighbors.js?v=1792444431"></script>
-<script src="connectors.js?v=1792444431"></script>
+<script src="rates_history.js?v=1792445142"></script>
+<script src="la_transit.js?v=1792445142"></script>
+<script src="neighbors.js?v=1792445142"></script>
+<script src="connectors.js?v=1792445142"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -417,7 +417,7 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const nm=x.web?`<a href="${x.web}" target="_blank" rel="noopener">${x.n}</a>`:x.n;
  const meet=x.m==null?'n/a':x.m.toLocaleString();
  const book=x.web?`<a href="${x.web}" target="_blank" rel="noopener">Check live rates</a>`:'';
- const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);x._m=xm;xm._rdata=x;x.a2=x.a+(x.a.includes(x.c)?'':', '+x.c)+', CA';xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
+ const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);x._m=xm;xm._rdata=x;x.a2=x.a+(x.a.includes(x.c)?'':', '+x.c)+', CA';xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>${(typeof RATES_HIST!=="undefined"&&RATES_HIST.some(e=>e.rates&&e.rates[x.n]))?histHTML(x):'No rate snapshot yet for this property. '}${book}${book?' &middot; ':''}<a href="https://www.google.com/travel/hotels?q=${encodeURIComponent(x.n+', '+x.c+', CA')}" target="_blank" rel="noopener">Compare rates on Google Hotels</a></p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
 const otCbs=[...ocBox.querySelectorAll('input[data-otier]')];const ocCityCbs=[...countyBox.querySelectorAll('input[data-ocity]')];const ocAll=document.getElementById('tAllOther');
 const cityCb=c=>ocCityCbs.find(x=>x.dataset.ocity===c);
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
@@ -496,7 +496,7 @@ function liveRatingInto(el,x){if(!el||el.dataset.live)return;el.dataset.live='1'
  }).catch(e=>{note.innerHTML='<span style="color:#5f5b50">Live Google rating unavailable right now; figures above are from the sources cited.</span>';console.warn(e);});}
 map.on('popupopen',e=>{const p=e.popup;const el=p.getElement()&&p.getElement().querySelector('.leaflet-popup-content');if(!el)return;const src=p._source;let x=null;
  if(src&&src._rdata)x=src._rdata;else if(p._rdata)x=p._rdata;if(!x)return;liveRatingInto(el,x);});
-function MODE_HOOK(el,kv,note,pl,x,closed,gl){x.grt=pl.rating;x.grc=pl.userRatingCount||0;x.gp=PRICE[pl.priceLevel]||null;x._live=true;x._miss=false;const row=document.createElement('div');row.className='kv';row.innerHTML=`<div><b>${pl.rating.toFixed(1)}</b><span>Rating (Google, live)</span></div><div><b>${(pl.userRatingCount||0).toLocaleString()}</b><span>Reviews (Google)</span></div><div><b style="font-size:1rem">${PRICE[pl.priceLevel]||'n/a'}</b><span>Price (Google)</span></div>`;kv.after(row);
+function MODE_HOOK(el,kv,note,pl,x,closed,gl){x.grt=pl.rating;x.grc=pl.userRatingCount||0;x.gp=PRICE[pl.priceLevel]||null;x._live=true;x._miss=false;const row=document.createElement('div');row.className='kv';const gh='https://www.google.com/travel/hotels?q='+encodeURIComponent(x.n+', '+(x.c||'Ontario')+', CA');row.innerHTML=`<div><b>${pl.rating.toFixed(1)}</b><span>Rating (Google, live)</span></div><div><b>${(pl.userRatingCount||0).toLocaleString()}</b><span>Reviews (Google)</span></div><div>${PRICE[pl.priceLevel]?`<b style="font-size:1rem">${PRICE[pl.priceLevel]}</b><span>Price (Google)</span>`:`<b style="font-size:.95rem"><a href="${gh}" target="_blank" rel="noopener">Rates</a></b><span>Google Hotels, live</span>`}</div>`;kv.after(row);
  note.innerHTML=`Rating, reviews and photo fetched live from Google Places just now; room count and meeting space above remain from the sources cited. ${gl}${closed?' <b style="color:#b3412f">Google lists this business as '+pl.businessStatus.toLowerCase().replace(/_/g,' ')+'.</b>':''}`;row.after(note);}
 /* hotel roster panel: per-city list with live Google ratings fetched for the whole city when opened */
 const rp=document.getElementById('rpanel');let rpCity=null,rpSort='rt';const LIVE_DONE={};let LIVE_PROG={};
