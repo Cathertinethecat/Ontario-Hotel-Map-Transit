@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="la_transit.js?v=1792394267"></script>
-<script src="neighbors.js?v=1792394267"></script>
-<script src="connectors.js?v=1792394267"></script>
+<script src="la_transit.js?v=1792394631"></script>
+<script src="neighbors.js?v=1792394631"></script>
+<script src="connectors.js?v=1792394631"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -89,14 +89,12 @@
 <body>
 <div id="map"></div>
 <div class="panel" id="panel">
-  <h1 id="ptog">Ontario Hotels: Transit <small id="pind">tap for legend &amp; controls</small></h1>
+  <h1 id="ptog">Legend <small id="pind">tap for legend &amp; controls</small></h1>
   <div class="body">
-  <p>Same hotels, rail and LA28 venues as the main map, plus every current, planned and cancelled link between the Metro A Line, Metrolink, ONT and the Ontario hotels, each in its own color. Tap a line or station for what it is, when, and the source.</p>
   <div class="btns"><b style="font-size:.85rem;width:100%">Zoom to area</b>
     <button id="bCity">Ontario</button>
-    <button id="bDist">Hotel district</button>
     <button id="bLA">LA region</button>
-    <button id="bCorr">Pomona to Rancho corridor</button>
+    <button id="bLA28">LA28 venues</button>
   </div>
   <div class="btns">
     <label><input type="checkbox" id="sat" checked> Satellite</label>
@@ -244,7 +242,7 @@ const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Worl
 const ref=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
 const lab=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
 const streets=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
-const satGroup=L.layerGroup([sat,ref,lab]).addTo(map);
+const satGroup=L.layerGroup([sat,lab]).addTo(map);
 document.getElementById('sat').onchange=e=>{if(e.target.checked){map.removeLayer(streets);satGroup.addTo(map);}else{map.removeLayer(satGroup);streets.addTo(map);}};
 
 /* approximate city limits */
@@ -327,8 +325,8 @@ const connCbs=[...document.querySelectorAll('#connToggles input[id^="c_"]')];con
 function syncConn(){const n=connCbs.filter(c=>c.checked).length;connAll.checked=n===connCbs.length;connAll.indeterminate=n>0&&n<connCbs.length;}
 connCbs.forEach(cb=>cb.addEventListener('change',syncConn));
 connAll.onchange=e=>{const on=e.target.checked;connCbs.forEach(cb=>{if(cb.checked!==on){cb.checked=on;cb.dispatchEvent(new Event('change'));}});syncConn();};
-document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
-document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
+document.getElementById('bLA').onclick=()=>map.fitBounds([[33.55,-118.60],[34.45,-116.60]]);
+document.getElementById('bLA28').onclick=()=>{const vs=TRANSIT.venues.filter(v=>v[3]>33.5&&v[4]>-118.7);map.fitBounds(vs.map(v=>[v[3],v[4]]),{padding:[20,20]});};
 /* other cities' hotels */
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];
 const OC_ORDER=['Ontario','El Monte','South El Monte','Baldwin Park','West Covina','Azusa','Glendora','San Dimas','La Puente','City of Industry','Hacienda and Rowland Heights','Walnut','Diamond Bar','Rancho Cucamonga','Pomona','Claremont','Montclair','Upland','Chino','Chino Hills','Fontana','Rialto','Colton','San Bernardino','Loma Linda','Redlands','Yucaipa','Eastvale','Jurupa Valley','Norco','Corona','Riverside','Moreno Valley','Perris'];const CITY_CENTER_FROM_LIMITS=OC_ORDER.filter(c=>c!=='Chino');const OG={};const ocBox=document.getElementById('otherToggles');
@@ -377,7 +375,6 @@ tierCbs.forEach(cb=>cb.onchange=e=>{refreshCity('Ontario');syncAll();});
 allCb.onchange=e=>{const on=e.target.checked;tierCbs.forEach(cb=>{cb.checked=on;});refreshCity('Ontario');syncAll();};
 OC_ORDER.forEach(refreshCity);
 document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
-document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
 map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 /* collapsible legend sections */
 function makeSection(masterId){const m=document.getElementById(masterId);if(!m)return;const head=m.closest('label');const box=head.parentNode;head.classList.add('sechead');
