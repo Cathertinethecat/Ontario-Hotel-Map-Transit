@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="la_transit.js"></script>
+<script src="neighbors.js"></script>
 <script src="connectors.js"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
@@ -57,8 +58,8 @@
     .panel p{font-size:.78rem}
     .panel button,.panel label{font-size:.78rem;padding:3px 7px}
     .panel .btns{gap:4px;margin-top:6px}
-    #tierToggles label,#connToggles label,#cityToggles label{width:calc(50% - 4px);padding:1px 0}
-    #tierToggles label[style],#cityToggles label[style],#connToggles b{width:100%}
+    #tierToggles label,#connToggles label,#cityToggles label,.oc label{width:calc(50% - 4px);padding:1px 0}
+    #tierToggles label[style],#cityToggles label[style],.oc label[style],#otherToggles>label,#connToggles b{width:100%}
     .leaflet-popup-content{font-size:13.5px;margin:10px 12px}
     .leaflet-popup-content h2{font-size:1rem}
     .kv b{font-size:1.1rem}
@@ -68,6 +69,9 @@
   }
   .secbtn{font:inherit;font-size:.9rem;border:none;background:none;padding:0 6px 0 0;cursor:pointer;color:#1f4e79;line-height:1}
   .grp{display:none;width:100%}
+  .oc{width:100%;margin-top:2px}
+  .oc label{display:block;width:100%;border:none;padding:2px 0;background:none}
+  .mk.oth{border:1.5px solid #fff;outline:1.5px dashed #1d1c19}
   .grp.open{display:flex;flex-wrap:wrap;gap:4px}
   .btns>label.sechead{display:flex;align-items:center;width:100%;border:none;background:none;padding:2px 0}
 </style>
@@ -99,12 +103,13 @@
     <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
   </div>
+  <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other cities' hotels</b> <span style="color:#5f5b50">(Pomona, Claremont, Montclair, Upland, Chino)</span></label></div>
   <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
   <p class="note" style="margin-top:8px"><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
-    <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address. City limits are the official boundaries from the <a href="https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0" target="_blank" rel="noopener">California Board of Equalization city layer</a>, loaded live.</p>
+    <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address. Hotels in Pomona, Claremont, Montclair, Upland and Chino come from HotelGuides and HotelPlanner listings (Oct 2026), room counts as those listings give them, placed by address and approximate; they are dash-outlined on the map. City limits are the official boundaries from the <a href="https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0" target="_blank" rel="noopener">California Board of Equalization city layer</a>, loaded live.</p>
     <p class="note">Metro rail geometry from LA Metro’s published GTFS feed, stitched to the 2025 network. Metrolink lines and LA28 venues placed by station and venue location, approximate. Venues and sports from la28.org: all 41 venues in the LA region plus San Diego Stadium (soccer semifinals and bronze matches); the other soccer stadiums, softball and slalom are out of state and not shown. Olympic competition dates, days and sessions per venue from LA28’s <a href="https://la28.org/content/dam/latwentyeight/competition-schedule-imagery/uploaded-july-29-oly-version-4-0/LA28OlympicGamesCompetitionScheduleByEventV4.0.pdf" target="_blank" rel="noopener">Competition Schedule by Event, v4.0</a> (July 29, 2026), subject to change; medal sessions are those LA28 types Final or Bronze; late sessions end at 22:00 or later.</p>
     <p class="note">No rail reaches ONT or the hotel district; nearest stations are Metrolink East Ontario and Rancho Cucamonga, and the A Line ends at Pomona North. No shared hotel shuttle: 14 hotels run their own vans to ONT (badged on cards); <a href="https://omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf" target="_blank" rel="noopener">Omnitrans Route 61</a> links Holt Blvd, ONT and Ontario Mills every 20 minutes but skips the Convention Center.</p>
   </div>
@@ -270,6 +275,23 @@ connCbs.forEach(cb=>cb.addEventListener('change',syncConn));
 connAll.onchange=e=>{const on=e.target.checked;connCbs.forEach(cb=>{if(cb.checked!==on){cb.checked=on;cb.dispatchEvent(new Event('change'));}});syncConn();};
 document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
+/* other cities' hotels */
+const OC_ORDER=['Pomona','Claremont','Montclair','Upland','Chino'];const OG={};const ocBox=document.getElementById('otherToggles');
+OC_ORDER.forEach(city=>{const slug=city.toLowerCase();OG[city]={};const tiers=[...new Set(NH.filter(x=>x.c===city).map(x=>x.t))];
+ const div=document.createElement('div');div.className='oc';div.id='oc_'+slug;
+ div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${city}</b> <span style="color:#5f5b50">(${NH.filter(x=>x.c===city).length} listed)</span></label>`+tiers.map(t=>`<label><input type="checkbox" data-ocity="${city}" data-tier="${t}" checked> <span style="color:${CAT[t].c}">&#9679;</span> ${CAT[t].l.split(' / ')[0]}</label>`).join('');
+ ocBox.appendChild(div);tiers.forEach(t=>OG[city][t]=L.layerGroup().addTo(map));});
+NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
+ const icon=L.divIcon({className:'',html:`<div class="mk oth" style="width:${d}px;height:${d}px;background:${CAT[x.t].c}">${x.r==null?'?':x.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
+ const src=x.s.map(k=>`<a href="${NSRC[k][1]}" target="_blank" rel="noopener">${NSRC[k][0]}</a>`).join(' &middot; ');
+ L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]).bindPopup(`<h2>${x.n}</h2><p class="addr">${x.a}. ${x.c}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a)}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'n/a':x.r}</b><span>rooms</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>tier</span></div></div>${x.note?`<p class="seas">${x.note}</p>`:''}<p class="seas"><i>Sources</i>${src}</p><p class="note">Room count as given by the listing cited; n/a where the listing shows none. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
+const ocTierCbs=[...ocBox.querySelectorAll('input[data-ocity]')];const ocCityCbs=OC_ORDER.map(c=>document.getElementById('oc_'+c.toLowerCase()+'_all'));const ocAll=document.getElementById('tAllOther');
+function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
+function syncOc(){OC_ORDER.forEach((c,i)=>{const cbs=ocTierCbs.filter(x=>x.dataset.ocity===c);setBox(ocCityCbs[i],cbs.filter(x=>x.checked).length,cbs.length);});const n=ocCityCbs.filter(c=>c.checked).length,m=ocCityCbs.filter(c=>c.indeterminate).length;ocAll.checked=n===ocCityCbs.length;ocAll.indeterminate=!ocAll.checked&&(n>0||m>0);}
+function setOcTier(cb,on){cb.checked=on;const g=OG[cb.dataset.ocity][cb.dataset.tier];on?g.addTo(map):map.removeLayer(g);}
+ocTierCbs.forEach(cb=>cb.onchange=e=>{setOcTier(cb,e.target.checked);syncOc();});
+ocCityCbs.forEach((cb,i)=>cb.onchange=e=>{const on=e.target.checked;ocTierCbs.filter(x=>x.dataset.ocity===OC_ORDER[i]).forEach(x=>setOcTier(x,on));syncOc();});
+ocAll.onchange=e=>{const on=e.target.checked;ocTierCbs.forEach(x=>setOcTier(x,on));syncOc();};
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];const allCb=document.getElementById('tAllHotels');
 function syncAll(){const n=tierCbs.filter(c=>c.checked).length;allCb.checked=n===tierCbs.length;allCb.indeterminate=n>0&&n<tierCbs.length;}
 tierCbs.forEach(cb=>cb.onchange=e=>{const g=TG[e.target.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);syncAll();});
@@ -282,7 +304,7 @@ function makeSection(masterId){const m=document.getElementById(masterId);if(!m)r
  const wrap=document.createElement('div');wrap.className='grp';let n=head.nextSibling;while(n){const nx=n.nextSibling;if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))wrap.appendChild(n);n=nx;}box.appendChild(wrap);
  const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
  b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
-['tAllOverlays','tAllHotels','tAllCity','tAllConn'].forEach(makeSection);
+['tAllOverlays','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_ORDER.forEach(c=>makeSection('oc_'+c.toLowerCase()+'_all'));
 </script>
 </body>
 </html>
