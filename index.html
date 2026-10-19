@@ -15,7 +15,7 @@
   .panel h1{font-size:1.05rem;margin:0;line-height:1.2;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
   .panel h1 small{font-size:.8rem;color:#5f5b50;font-weight:400}
   .panel .body{display:none;margin-top:6px;max-height:70vh;overflow:auto}
-  #connToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
+  #connToggles label,#tierToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
   .panel.open .body{display:block}
   .leaflet-popup-pane{z-index:1200}
   .leaflet-popup{margin-bottom:28px}
@@ -62,7 +62,14 @@
   </div>
   <div class="btns" id="connToggles"><b style="font-size:.85rem;width:100%">Connectors (tap a line for details)</b></div>
   <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
-  <p class="note" style="margin-top:8px"><span style="color:#b3412f">&#9679;</span> Full service &nbsp;<span style="color:#c98a1c">&#9679;</span> Select &nbsp;<span style="color:#2f7d4e">&#9679;</span> Extended stay &nbsp;<span style="color:#6b5ea8">&#9679;</span> Economy &nbsp;<span style="color:#b3412f">&#9711;</span> Planned<br><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
+  <div class="btns" id="tierToggles"><b style="font-size:.85rem;width:100%">Hotels by tier</b>
+    <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
+    <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
+    <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
+    <label><input type="checkbox" data-tier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
+    <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
+  </div>
+  <p class="note" style="margin-top:8px"><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
@@ -163,12 +170,13 @@ L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],
 
 LM.forEach(l=>L.marker([l[1],l[2]],{icon:L.divIcon({className:'',html:`<div class="lm">${l[0]}</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(map));
 
+const TG={};Object.keys(CAT).forEach(k=>TG[k]=L.layerGroup().addTo(map));
 H.forEach(h=>{
   const d=Math.round(14+Math.sqrt(h.r||60)*0.9);
   const icon=L.divIcon({className:'',html:`<div class="mk${h.plan?' plan':''}" style="width:${d}px;height:${d}px;${h.plan?'':'background:'+CAT[h.t].c}">${h.r==null?'?':h.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
   const share=(h.plan||h.r==null)?'n/a':(100*h.r/TMD).toFixed(1)+'%';
   const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
-  L.marker([h.lat,h.lng],{icon}).addTo(map).bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
+  L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]).bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
    <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
    <p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
@@ -195,6 +203,7 @@ CONN.layers.forEach(c=>{
 });
 document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
+document.querySelectorAll('#tierToggles input').forEach(cb=>cb.onchange=e=>{const g=TG[e.target.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);});
 document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
 document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
 map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
