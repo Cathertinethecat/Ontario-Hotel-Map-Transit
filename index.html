@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ontario Hotel Map: Transit</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="la_transit.js"></script>
+<script src="connectors.js"></script>
+<style>
+  html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
+  #map{position:absolute;inset:0}
+  .panel{position:absolute;left:10px;bottom:28px;z-index:600;background:rgba(255,255,255,.94);border-radius:4px;padding:8px 12px;max-width:min(320px,calc(100vw - 20px));box-shadow:0 1px 6px rgba(0,0,0,.35)}
+  .panel h1{font-size:1.05rem;margin:0;line-height:1.2;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .panel h1 small{font-size:.8rem;color:#5f5b50;font-weight:400}
+  .panel .body{display:none;margin-top:6px;max-height:70vh;overflow:auto}
+  #connToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
+  .panel.open .body{display:block}
+  .leaflet-popup-pane{z-index:1200}
+  .leaflet-popup{margin-bottom:28px}
+  .panel p{margin:0;font-size:.85rem;color:#5f5b50}
+  .panel .btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .panel button,.panel label{font:inherit;font-size:.85rem;border:1px solid #c9c3b2;background:#fff;border-radius:3px;padding:4px 8px;cursor:pointer}
+  .leaflet-popup-content{font-family:"Times New Roman",Times,serif;font-size:15px;line-height:1.4;margin:12px 14px}
+  .leaflet-popup-content h2{font-size:1.1rem;margin:0 0 2px}
+  .leaflet-popup-content h2 a{color:#1f4e79}
+  .hphoto{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:3px;margin:0 0 8px;background:#efece2}
+  .leaflet-popup-content .addr{color:#5f5b50;font-size:.9rem;margin:0 0 8px}
+  .kv{display:flex;gap:8px;margin:0 0 8px}
+  .kv div{background:#efece2;border-radius:3px;padding:5px 8px;flex:1}
+  .kv b{display:block;font-size:1.3rem;line-height:1.1}
+  .kv span{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:#5f5b50}
+  .seas{border-top:1px solid #c9c3b2;padding-top:6px;margin:0;font-size:.9rem}
+  .seas i{display:block;margin-bottom:2px}
+  .note{font-size:.78rem;color:#5f5b50;margin:6px 0 0}
+  .badge{display:inline-block;font-size:.75rem;background:#1f4e79;color:#fff;border-radius:3px;padding:2px 7px;margin:0 0 8px}
+  .badge.off{background:#efece2;color:#5f5b50;border:1px solid #c9c3b2}
+  .mk{background:#b3412f;color:#fff;border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 11px "Times New Roman",Times,serif;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .mk.plan{background:#fff;color:#b3412f;border:1.5px dashed #b3412f}
+  .vm{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #d4a017;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .vm::after{content:'';position:absolute;inset:5px;border-radius:50%;background:#d4a017}
+  .lm{background:rgba(31,78,121,.9);color:#fff;border-radius:3px;padding:2px 6px;font:italic 11px "Times New Roman",Times,serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel" id="panel">
+  <h1 id="ptog">Ontario Hotels: Transit <small id="pind">tap for legend &amp; controls</small></h1>
+  <div class="body">
+  <p>Same hotels, rail and LA28 venues as the main map, plus every current, planned and cancelled link between the Metro A Line, Metrolink, ONT and the Ontario hotels, each in its own color. Tap a line or station for what it is, when, and the source.</p>
+  <div class="btns">
+    <button id="bCity">Ontario</button>
+    <button id="bDist">Hotel district</button>
+    <button id="bLA">LA region</button>
+  </div>
+  <div class="btns">
+    <label><input type="checkbox" id="sat" checked> Satellite</label>
+    <label><input type="checkbox" id="tRail" checked> Metro rail</label>
+    <label><input type="checkbox" id="tML" checked> Metrolink</label>
+    <label><input type="checkbox" id="tLA28" checked> LA28 venues</label>
+  </div>
+  <div class="btns" id="connToggles"><b style="font-size:.85rem;width:100%">Connectors (tap a line for details)</b></div>
+  <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
+  <p class="note" style="margin-top:8px"><span style="color:#b3412f">&#9679;</span> Full service &nbsp;<span style="color:#c98a1c">&#9679;</span> Select &nbsp;<span style="color:#2f7d4e">&#9679;</span> Extended stay &nbsp;<span style="color:#6b5ea8">&#9679;</span> Economy &nbsp;<span style="color:#b3412f">&#9711;</span> Planned<br><span style="color:#d4a017">&#9673;</span> LA28 venue &nbsp;<span style="color:#0072BC">&#9644;</span> Metro rail &nbsp;<span style="color:#555">&#9644;</span> Metrolink</p>
+  <p class="note" id="connLegend"></p>
+  <p class="note"><a href="#" id="aboutTog">About the data</a></p>
+  <div id="about" style="display:none">
+    <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address.</p>
+    <p class="note">Metro rail geometry from LA Metro’s published GTFS feed, stitched to the 2025 network. Metrolink lines and LA28 venues placed by station and venue location, approximate. Venues and sports from la28.org, 41 venues in the LA region.</p>
+    <p class="note">No rail reaches ONT or the hotel district; nearest stations are Metrolink East Ontario and Rancho Cucamonga, and the A Line ends at Pomona North. No shared hotel shuttle: 14 hotels run their own vans to ONT (badged on cards); <a href="https://omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf" target="_blank" rel="noopener">Omnitrans Route 61</a> links Holt Blvd, ONT and Ontario Mills every 20 minutes but skips the Convention Center.</p>
+  </div>
+  </div>
+</div>
+<script>
+const TMD=5461;
+const CAT={full:{c:'#b3412f',l:'Full service / convention'},select:{c:'#c98a1c',l:'Select service'},ext:{c:'#2f7d4e',l:'Extended stay'},econ:{c:'#6b5ea8',l:'Economy'},plan:{c:'#b3412f',l:'Planned'}};
+const SRC={
+ sm:{l:'Successful Meetings, Ontario CA hotel directory',u:'https://www.successfulmeetings.com/Meeting-Event-Venues/Ontario-CA/Hotels'},
+ eng:{l:'Engine, Ontario conference hotels',u:'https://engine.com/hotels/ontario-ca/conference'},
+ taw1:{l:'TravelAge West, Ontario hotel directory (Motel 6 nearby list)',u:'https://www.travelagewest.com/Hotels/Ontario-CA/Motel-6-Ontario-Airport-p6355816,Nearby-Hotels?v=D'},
+ taw2:{l:'TravelAge West, Ontario hotel directory (La Quinta nearby list)',u:'https://www.travelagewest.com/Hotels/Ontario-CA/La-Quinta-Inn-Suites-Ontario-Airport-p51281001,Nearby-Hotels?v=D'},
+ city:{l:'City of Ontario, Hospitality & Tourism info sheet (May 2024)',u:'https://content.ontarioca.gov/sites/default/files/2024-05/ONE-PAGER%20HOSPITALITY%20%26%20TOURISM_0.pdf'},
+ ccpdf:{l:'City of Ontario, Convention Center Expansion info sheet (May 2024)',u:'https://content.ontarioca.gov/sites/default/files/2024-05/ONE-PAGER%20CONVENTION%20CENTER%20EXPANSION_0.pdf'},
+ sepr:{l:'City of Ontario press release, Ontario Sports Empire (Oct 2025)',u:'https://www.ontarioca.gov/news/ontario-unveils-southern-californias-largest-sports-and-entertainment-district'}
+};
+const G='https://go-cal.org/stay-here/p/';
+const H=[
+ {t:'full',n:"DoubleTree by Hilton Ontario Airport",shuttle:true,a:"222 N Vineyard Ave",r:482,m:"24,224",lat:34.0637,lng:-117.6006,cls:"Full service, adjacent to Convention Center",s:"Largest convention block in the city. Fills first on major Convention Center dates and tends to hold group rates through spring and fall meeting season; summer weekends are the softest window.",src:[SRC.sm,SRC.eng,{l:'Hotels.com property page',u:'https://www.hotels.com/ho115749/doubletree-by-hilton-ontario-airport-ontario-united-states-of-america/'}],gocal:G+'doubletree-by-hilton-hotel-ontario-airport-66bb5a525a02e0043e065e7f',web:"https://www.hilton.com/en/hotels/onto-dt-doubletree-ontario-airport/",img:"https://www.hilton.com/im/en/MultiHotel/376135/onto-dt-courtyard-view.jpg?impolicy=crop&cw=2265&ch=1268&gravity=NorthWest&xposition=0&yposition=115&rw=768&rh=430"},
+ {t:'full',n:"Delta Hotels by Marriott Ontario Airport",a:"2200 E Holt Blvd",r:299,m:"19,041",lat:34.0630,lng:-117.5962,cls:"Full service, Convention Center district",s:"Second convention headquarters property. Tracks the same convention calendar as the DoubleTree; business-travel weeknights run strong year-round because of ONT.",src:[SRC.sm],gocal:G+'delta-hotels-ontario-airport-66bb5a525a02e0043e0660f6',web:"https://www.marriott.com/en-us/hotels/ontde-delta-hotels-ontario-airport/overview/",img:"https://cache.marriott.com/is/image/marriotts7prod/de-ontde-outdoor-pool-30627:Wide-Hor?wid=1336&fit=constrain"},
+ {t:'full',n:"Ontario Airport Hotel & Conference Center",a:"700 N Haven Ave",r:295,m:"24,000",lat:34.0708,lng:-117.5766,cls:"Full service, renovated 2025",s:"Independent property with the largest ballroom outside the DoubleTree. Social events fill weekends; weekday demand is airport and corporate.",src:[{l:'Travel Weekly property page',u:'https://www.travelweekly.com/Hotels/Ontario-CA/Ontario-Airport-Hotel-Conference-Ctr-p6229479'},SRC.sm],gocal:G+'ontario-airport-hotel-and-conference-center-66bb55695a02e0043e05f02c',web:"https://ontarioairporthotel.com/"},
+ {t:'full',n:"Holiday Inn Ontario Airport",shuttle:true,a:"2155 E Convention Center Way",r:180,m:"n/a",lat:34.0658,lng:-117.5948,cls:"Full service, Convention Center district",s:"Convention and airport demand; moves with the Convention Center calendar.",src:[SRC.sm],gocal:G+'holiday-inn-ontario-airport-66bb5a535a02e0043e066c96',web:"https://www.ihg.com/holidayinn/hotels/us/en/ontario/ontha/hoteldetail",img:"https://digital.ihg.com/is/image/ihg/holiday-inn-ontario-4026469916-2x1"},
+ {t:'full',n:"Embassy Suites by Hilton Ontario Airport",shuttle:true,a:"3663 E Guasti Rd",r:175,m:"6,000",lat:34.0710,lng:-117.5700,cls:"All-suite, Guasti Rd",s:"Family and sports-tournament demand on weekends, corporate on weeknights. Youth sports seasons push spring and fall weekends, and the Sports Empire will add to that.",note:"Sources disagree: Engine lists 175, TravelAge West lists 182.",src:[SRC.eng,SRC.taw2],gocal:G+'embassy-suites-by-hilton-ontario-airport-66bb55695a02e0043e05f052',web:"https://www.hilton.com/en/hotels/ontapes-embassy-suites-ontario-airport/",img:"https://www.hilton.com/im/en/ONTAPES/3826768/ontario-exterior.jpg?impolicy=crop&cw=3264&ch=1827&gravity=NorthWest&xposition=0&yposition=310&rw=768&rh=430"},
+ {t:'full',n:"Azure Hotel & Suites Ontario Airport",a:"1945 E Holt Blvd",r:167,m:"n/a",lat:34.0630,lng:-117.6020,cls:"Upscale, Holt Blvd",s:"Convention overflow property; moves with the Convention Center schedule.",src:[SRC.sm,SRC.taw1],gocal:G+'azure-hotel-suites-trademark-collection-by-wyndham-66bb5a525a02e0043e065f22',web:"https://www.wyndhamhotels.com/trademark/ontario-california/azure-hotel-suites-ontario-ca/overview"},
+ {t:'full',n:"Sheraton Ontario Airport Hotel",shuttle:true,a:"429 N Vineyard Ave",r:165,m:"6,285",lat:34.0668,lng:-117.6008,cls:"Full service, Vineyard at I-10",s:"Park-and-fly packages make ONT holiday travel periods (Thanksgiving through New Year) a relative peak.",src:[SRC.sm,SRC.taw1],gocal:G+'sheraton-ontario-airport-hotel-66bb5a525a02e0043e065eb6',web:"https://www.marriott.com/en-us/hotels/ontoa-sheraton-ontario-airport-hotel/overview/",img:"https://cache.marriott.com/is/image/marriotts7prod/si-ontoa-lobby-69637:Wide-Hor?wid=1336&fit=constrain"},
+ {t:'full',n:"Hotel d'Lins Ontario Airport",a:"3400 Shelby St",r:150,m:"1,500",lat:34.0698,lng:-117.5735,cls:"Moderate full service, Haven Ave corridor",s:"Airport, arena and highway transient demand; little seasonal swing beyond holiday travel.",src:[SRC.sm,SRC.taw2],gocal:G+'hotel-dlins-ontario-airport-66bb55695a02e0043e05f03f',web:"https://www.hoteldlinsontarioairport.com/"},
+ {t:'select',n:"Best Western Plus Ontario Airport & Convention Center",shuttle:true,a:"209 N Vineyard Ave",r:153,m:"1,275",lat:34.0636,lng:-117.6013,cls:"Select service, walkable to Convention Center",s:"Price-sensitive convention and airport overflow; follows the two big convention hotels at a discount.",src:[{l:'Best Western property page',u:'https://www.bestwestern.com/en_US/book/hotels-in-ontario/best-western-plus-ontario-airport-convention-center/propertyCode.05343.html'}],gocal:G+'best-western-plus-ontario-airport-convention-center-66bb5a525a02e0043e065e92',web:"https://www.bestwestern.com/en_US/book/hotels-in-ontario/best-western-plus-ontario-airport-convention-center/propertyCode.05343.html"},
+ {t:'select',n:"La Quinta Inn & Suites Ontario Airport",shuttle:true,a:"3555 Inland Empire Blvd",r:144,m:"n/a",lat:34.0722,lng:-117.5728,cls:"Select service, north of I-10",s:"Airport and arena transient; weekday corporate from the Haven Ave office corridor.",src:[SRC.taw2],gocal:G+'la-quinta-inn-suites-by-wyndham-ontario-airport-66bb55695a02e0043e05f091',web:"https://www.wyndhamhotels.com/laquinta/ontario-california/la-quinta-ontario-airport/overview"},
+ {t:'select',n:"Hyatt Place Ontario / Rancho Cucamonga",a:"4760 Mills Cir",r:127,m:"n/a",lat:34.0703,lng:-117.5469,cls:"Select service, Ontario Mills",s:"Shopping and Toyota Arena traffic; holiday retail season is a relative peak.",src:[{l:'Travel Weekly property page',u:'https://www.travelweekly.com/Hotels/Ontario-CA/Hyatt-Place-Ontario-Rancho-Cucamonga-p55118934'}],gocal:G+'hyatt-place-ontariorancho-cucamonga-66bb617b5a02e0043e073385',web:"https://www.hyatt.com/hyatt-place/en-US/ontzo-hyatt-place-ontario-rancho-cucamonga"},
+ {t:'select',n:"SpringHill Suites Ontario Airport",a:"3595 E Guasti Rd",r:126,m:"n/a",lat:34.0706,lng:-117.5714,cls:"Select service, Guasti Rd",s:"Mirrors Embassy Suites next door: weekend families and tournaments, weekday corporate.",src:[SRC.taw2],gocal:G+'springhill-suites-by-marriott-ontario-airportrancho-cucamonga-66bb55695a02e0043e05f1fe',web:"https://www.marriott.com/en-us/hotels/ontrv-springhill-suites-ontario-airport-rancho-cucamonga/overview/",img:"https://cache.marriott.com/content/dam/marriott-renditions/ONTRV/ontrv-exterior-5677-hor-wide.jpg?output-quality=70&interpolation=progressive-bilinear&downsize=1336px:*"},
+ {t:'select',n:"Holiday Inn Express & Suites Ontario Airport",shuttle:true,a:"2280 S Haven Ave",r:120,m:"4,052",lat:34.0402,lng:-117.5768,cls:"Select service, south of the airport",s:"Logistics and distribution-center business travel from the south Ontario warehouse district keeps weeknights steady; weekends are soft.",src:[SRC.sm,SRC.eng],gocal:G+'holiday-inn-express-suites-ontario-airport-by-ihg-66bb55695a02e0043e05eaaa',web:"https://www.ihg.com/holidayinnexpress/hotels/us/en/ontario/ontex/hoteldetail",img:"https://digital.ihg.com/is/image/ihg/holiday-inn-express-and-suites-ontario-6332985211-2x1"},
+ {t:'select',n:"Comfort Suites Ontario Airport Convention Center",shuttle:true,a:"1811 E Holt Blvd",r:100,m:"1,200",lat:34.0632,lng:-117.6043,cls:"Select service, Holt Blvd",s:"Convention overflow and airport transient.",src:[SRC.sm],gocal:G+'comfort-suites-ontario-airport-convention-center-66bb5a525a02e0043e065ea4',web:"https://www.choicehotels.com/california/ontario/comfort-suites-hotels/caa15"},
+ {t:'select',n:"Hampton Inn & Suites Ontario",shuttle:true,a:"4500 E Mills Cir",r:91,m:"3,060",lat:34.0758,lng:-117.5478,cls:"Select service, Ontario Mills",s:"Shopping and Toyota Arena traffic; holiday retail season (Nov to Dec) is a relative peak.",src:[SRC.eng],gocal:G+'hampton-inn-suites-ontario-66bb617b5a02e0043e073397',web:"https://www.hilton.com/en/hotels/onthshx-hampton-suites-ontario/",img:"https://www.hilton.com/im/en/ONTHSHX/1167087/exterior-with-sign.jpg?impolicy=crop&cw=4494&ch=2516&gravity=NorthWest&xposition=0&yposition=241&rw=768&rh=430"},
+ {t:'select',n:"Hampton Inn Ontario Airport",a:"535 N Turner Ave",r:65,m:"n/a",lat:34.0680,lng:-117.5880,cls:"Select service, Turner Ave at I-10",s:"Airport transient; shares a site with Home2 Suites.",src:[SRC.sm],gocal:G+'hampton-inn-by-hilton-ontario-airport-69c317d45834aea166d0923b',web:"https://www.hilton.com/en/hotels/onthehx-hampton-ontario-airport/",img:"https://www.hilton.com/im/en/ONTHEHX/27378175/8-print-hampton-2.jpg?impolicy=crop&cw=5000&ch=2799&gravity=NorthWest&xposition=0&yposition=266&rw=768&rh=430"},
+ {t:'ext',n:"Residence Inn by Marriott Ontario Airport",shuttle:true,a:"2025 Convention Center Way",r:200,m:"n/a",lat:34.0662,lng:-117.5975,cls:"Extended stay, adjacent to Convention Center",s:"Extended-stay suites run steadier occupancy than transient hotels; relocation and project crews flatten the seasonal curve.",src:[{l:'Marriott property page',u:'https://www.marriott.com/en-us/hotels/ontvy-residence-inn-ontario-airport/overview/'}],gocal:G+'residence-inn-by-marriott-ontario-airport-66bb5a525a02e0043e065eda',web:"https://www.marriott.com/en-us/hotels/ontvy-residence-inn-ontario-airport/overview/",img:"https://cache.marriott.com/content/dam/marriott-renditions/ONTVY/ontvy-exterior-0049-hor-wide.jpg?output-quality=70&interpolation=progressive-bilinear&downsize=1336px:*"},
+ {t:'ext',n:"Element by Marriott Ontario",a:"900 Via Piemonte",r:131,m:"n/a",lat:34.0735,lng:-117.5620,cls:"Extended stay, Ontario Center near Toyota Arena",s:"Project crews and arena events; flat seasonal profile.",src:[SRC.taw2],gocal:G+'element-ontario-66bb617a5a02e0043e072a2a',web:"https://www.marriott.com/en-us/hotels/ontel-element-ontario/overview/",img:"https://cache.marriott.com/content/dam/marriott-renditions/ONTEL/ontel-exterior-1856-hor-wide.jpg?output-quality=70&interpolation=progressive-bilinear&downsize=1336px:*"},
+ {t:'ext',n:"Extended Stay America Ontario Airport",a:"3990 Inland Empire Blvd",r:127,m:"480",lat:34.0725,lng:-117.5650,cls:"Extended stay, Inland Empire Blvd",s:"Long-stay workers and relocations; flat seasonal profile.",src:[SRC.taw2],gocal:G+'extended-stay-america-suites--los-angeles---ontario-airport-66bb617a5a02e0043e071319',web:"https://www.extendedstayamerica.com/hotels/ca/los-angeles/ontario-airport"},
+ {t:'ext',n:"Everhome Suites Ontario Airport",a:"1820 E G St",r:118,m:"n/a",lat:34.0674,lng:-117.6050,cls:"Extended stay, G St at I-10",s:"New-build extended stay; long-stay workers and relocations.",src:[SRC.taw1],gocal:G+'everhome-suites-ontario-6a0b5afbd7c38a83e8d65d5b',web:"https://www.choicehotels.com/california/ontario/everhome-suites-hotels/caj38"},
+ {t:'ext',n:"Extended Studio Hotel Ontario (TownePlace Suites)",a:"1818 E Holt Blvd",r:108,m:"624",lat:34.0624,lng:-117.6047,cls:"Extended stay, Holt Blvd",s:"Long-stay budget demand; flat seasonal profile.",note:"GOCAL lists this address as Extended Studio Hotel; Marriott now lists it as TownePlace Suites Ontario Convention Center, so a rebrand appears under way.",src:[SRC.sm],gocal:G+'extended-studio-hotel-ontario-67f5828082a0986ebb21fad6',web:"https://www.marriott.com/en-us/hotels/ontct-towneplace-suites-ontario-convention-center/overview/"},
+ {t:'ext',n:"Home2 Suites by Hilton Ontario Airport",a:"535 N Turner Ave",r:63,m:"n/a",lat:34.0684,lng:-117.5872,cls:"Extended stay, Turner Ave at I-10",s:"Extended stay; flat seasonal profile.",src:[SRC.sm],gocal:G+'home2-suites-by-hilton-ontario-airport-69c318755834aea166d093a1',web:"https://www.hilton.com/en/hotels/ontooht-home2-suites-ontario-airport/",img:"https://www.hilton.com/im/en/ONTHEHX/27378172/10-print-hampton-4.jpg?impolicy=crop&cw=5000&ch=2799&gravity=NorthWest&xposition=0&yposition=266&rw=768&rh=430"},
+ {t:'ext',n:"Ayres Suites Ontario Mills Mall",shuttle:true,a:"4370 Mills Cir",r:140,m:"n/a",lat:34.0762,lng:-117.5500,cls:"All-suite, Ontario Mills",s:"Shopping and arena traffic.",src:[{l:'Business Travel News property page',u:'https://www.businesstravelnews.com/Hotels/Ontario-CA/Ayres-Suites-Ontario-Mills-Mall-p3087570'}],gocal:G+'ayres-suites-ontario-mills-mall---rancho-cucamonga-66bb617a5a02e0043e072889',web:"https://www.ayreshotels.com/ayres-suites-ontario-mills-mall",img:"https://d2mtcik3uxkx71.cloudfront.net/ayreshotels.com-1322018051/cms/cache/v2/5beaaba69fe8a.jpg/720x620/fit/80/9c2fc46e974ebb8e04a73eb68aaaff08.jpg"},
+ {t:'econ',n:"Ontario Airport Inn",shuttle:true,a:"1801 E G St",r:188,m:"n/a",lat:34.0668,lng:-117.6062,cls:"Economy, G St at I-10",s:"Largest budget block in the city; airport and highway transient.",src:[SRC.taw1],gocal:G+'ontario-airport-inn-66bb5a525a02e0043e065ec8',web:"https://www.ontarioairportinn.com/",img:"https://www.ontarioairportinn.com/site/assets/files/14667/hotel_near_ontario_airport.1200x0.jpg"},
+ {t:'econ',n:"Quality Inn Ontario Airport Convention Center",shuttle:true,a:"514 N Vineyard Ave",r:124,m:"900",lat:34.0676,lng:-117.6013,cls:"Economy, Vineyard at I-10",s:"Convention overflow at the bottom of the rate ladder.",src:[SRC.sm,SRC.taw1],gocal:G+'quality-inn-ontario-airport-convention-center-66bb5a525a02e0043e065f10',web:"https://www.choicehotels.com/california/ontario/quality-inn-hotels/ca653"},
+ {t:'econ',n:"Country Inn & Suites by Radisson, Ontario Mills",a:"4674 Ontario Mills Pkwy",r:115,m:"n/a",lat:34.0772,lng:-117.5462,cls:"Economy, Ontario Mills",s:"Shopping and arena traffic.",src:[{l:'HotelPlanner property page',u:'https://www.hotelplanner.com/Hotels/283136/Reservations-Country-Inn-Suites-by-Radisson-Ontario-at-Ontario-Mills-Ca-Ontario-4674-East-Ontario-Mills-Pkwy-91764'}],gocal:G+'country-inn-suites-by-radisson-ontario-at-ontario-mills-ca-66bb617b5a02e0043e073361',web:"https://www.choicehotels.com/hotel/cak29"},
+ {t:'econ',n:"SureStay Hotel by Best Western Ontario Airport",a:"3201 Centre Lake Dr",r:114,m:"n/a",lat:34.0665,lng:-117.5790,cls:"Economy, Centre Lake near Haven",s:"Airport transient.",src:[SRC.taw2],gocal:G+'surestay-by-best-western-ontario-airport-66bb55695a02e0043e05f25a',web:"https://www.bestwestern.com/en_US/book/hotels-in-ontario/surestay-by-best-western-ontario-airport/propertyCode.52112.html"},
+ {t:'econ',n:"Best Western Ontario Mills Mall",shuttle:true,a:"4395 Ontario Mills Pkwy",r:105,m:"600",lat:34.0776,lng:-117.5522,cls:"Economy, Ontario Mills",s:"Shopping and arena traffic.",src:[{l:'Cvent property page',u:'https://www.cvent.com/venues/ontario/hotel/best-western-ontario-mills-mall/venue-630d9627-6dc7-446c-86d7-3c00bcafdb35'}],gocal:G+'best-western-ontario-mills-mall-66bb617a5a02e0043e072938',web:"https://www.bestwestern.com/en_US/book/hotels-in-ontario/best-western-ontario-mills-mall/propertyCode.05773.html"},
+ {t:'econ',n:"Rodeway Inn Ontario Mills Mall",a:"4075 E Guasti Rd",r:100,m:"n/a",lat:34.0708,lng:-117.5642,cls:"Economy, Guasti Rd",s:"Highway transient.",src:[{l:'Business Travel News property page',u:'https://www.businesstravelnews.com/Hotels/Ontario-CA/Rodeway-Inn-Ontario-Mills-Mall-p3163750'}],gocal:G+'rodeway-inn-ontario-mills-mall-66bb617b5a02e0043e073373',web:"https://www.choicehotels.com/california/ontario/rodeway-inn-hotels/ca816"},
+ {t:'econ',n:"Comfort Inn & Suites Near Ontario Airport",a:"3333 Shelby St",r:92,m:"240",lat:34.0702,lng:-117.5748,cls:"Economy, Shelby St",s:"Airport and arena transient.",src:[SRC.taw2],gocal:G+'comfort-inn-suites-near-ontario-airport-66bb55695a02e0043e05f26d',web:"https://www.choicehotels.com/california/ontario/comfort-inn-hotels/cag03"},
+ {t:'econ',n:"Motel 6 Ontario Convention Center-Airport",a:"231 N Vineyard Ave",r:91,m:"n/a",lat:34.0642,lng:-117.6018,cls:"Economy, Vineyard Ave",s:"Convention overflow at the bottom of the rate ladder.",src:[{l:'Travel Weekly property page',u:'https://www.travelweekly-asia.com/Hotels/Ontario-CA/Motel-6-Ontario/Local-p53948724'}],gocal:G+'motel-6-ontario-ca-convention-center-airport-66bb5a525a02e0043e065efe',web:"https://www.motel6.com/property/motel-ontario-california-us-294559/",img:"https://images.oyoroomscdn.com/uploads/hotel_image/294559/motel_6_ontario_ca_exterior_2_1759237357202.jpg"},
+ {t:'econ',n:"Baymont by Wyndham Ontario",a:"1655 E 4th St",r:80,m:"n/a",lat:34.0786,lng:-117.6076,cls:"Economy, 4th St",s:"Highway transient.",src:[SRC.taw1],gocal:G+'baymont-by-wyndham-ontario-66bb5a535a02e0043e0664f8',web:"https://www.wyndhamhotels.com/baymont/ontario-california/baymont-ontario/overview"},
+ {t:'econ',n:"Ramada by Wyndham Ontario Airport",a:"1841 E G St",r:72,m:"n/a",lat:34.0671,lng:-117.6042,cls:"Economy, G St at Vineyard",s:"Airport and highway transient.",src:[SRC.taw1],gocal:G+'ramada-by-wyndham-ontario-66bb5a525a02e0043e065eec',web:"https://www.wyndhamhotels.com/ramada/ontario-california/ramada-ontario-airport/overview"},
+ {t:'econ',n:"Motel 6 Ontario Airport",a:"1560 E 4th St",r:69,m:"n/a",lat:34.0786,lng:-117.6092,cls:"Economy, 4th St",s:"Highway transient.",src:[SRC.taw1],gocal:G+'motel-6-ontario-ca---airport-66bb5a535a02e0043e06651c',web:"https://www.motel6.com/property/motel-ontario-california-us-293897/",img:"https://images.oyoroomscdn.com/uploads/hotel_image/293897/motel_6_ontario_ca_exterior_2_1759846186081.jpg"},
+ {t:'econ',n:"Express Inn & Suites Ontario",a:"1150 N Grove Ave",r:58,m:"n/a",lat:34.0752,lng:-117.6272,cls:"Economy, Grove Ave",s:"Highway transient.",note:"Not in GOCAL's lodging directory; status unconfirmed.",src:[SRC.taw1],web:"https://www.expressinnontario.com/"},
+ {t:'econ',n:"Hotel Hacienda at Ontario Ranch",a:"2425 S Archibald Ave",r:56,m:"n/a",lat:34.0385,lng:-117.5932,cls:"Economy, south of the airport",s:"Logistics-district transient; one of two open hotels south of Airport Dr.",src:[{l:'Travel Weekly property page',u:'https://www.travelweekly.com/Hotels/Ontario-CA/Hotel-Hacienda-at-Ontario-Ranch-p61240257'}],gocal:G+'hotel-hacienda-at-ontario-ranch-66bb55695a02e0043e05eabc',web:"https://www.hotelhaciendaontario.com/",img:"https://www.hotelhaciendaontario.com/site/assets/files/10657/best_hotel_ontario_ca.1200x0.jpg"},
+ {t:'econ',n:"Days Inn by Wyndham Ontario Airport",a:"1405 E 4th St",r:49,m:"n/a",lat:34.0786,lng:-117.6112,cls:"Economy, 4th St at I-10",s:"Highway transient.",src:[SRC.taw1],gocal:G+'days-inn-by-wyndham-ontario-airport-66bb5a535a02e0043e0664e7',web:"https://www.wyndhamhotels.com/days-inn/ontario-california/days-inn-ontario-airport/overview"},
+ {t:'econ',n:"Mayfair Inn Ontario Airport",a:"1120 E Holt Blvd",r:10,m:"n/a",lat:34.0630,lng:-117.6170,cls:"Economy motel, Holt Blvd",s:"Highway transient.",src:[{l:'Hotels.com property page',u:'https://lookup.hotels.com/ho3187729056/mayfair-inn-ontario-united-states-of-america'}],gocal:G+'mayfair-inn-ontario-airport-66bb505e5a02e0043e0565ba'},
+ {t:'econ',n:"Hotel Seville Ontario Airport/Chino",a:"2441 S Euclid Ave",r:null,m:"n/a",lat:34.0385,lng:-117.6510,cls:"Economy, S Euclid near SR-60",s:"Highway transient.",src:[],gocal:G+'hotel-seville---ontario-airportchino-66bb505e5a02e0043e056ef8',web:"https://www.hotelsevilleontario.com/",img:"https://www.hotelsevilleontario.com/gallery-images/properties/1/1/3/Rm_225-Final-2.jpg"},
+ {t:'econ',n:"Capri Motel",a:"1217 E Holt Blvd",r:null,m:"n/a",lat:34.0630,lng:-117.6150,cls:"Economy motel, Holt Blvd",s:"Highway transient.",src:[],gocal:G+'capri-motel-66bb5a525a02e0043e065fb8'},
+ {t:'plan',plan:true,n:"Convention Center hotel (planned)",a:"Ontario Convention Center campus",r:600,m:"n/a",lat:34.0652,lng:-117.5990,cls:"Planned, 673,000 sq ft convention hotel, completion Summer 2027",s:"Not yet open. Part of the 247,000 sq ft Convention Center expansion. 600+ rooms, spa, fitness center and three signature restaurants. Would be the largest hotel in the city and the anchor of the convention block.",src:[SRC.ccpdf,SRC.city]},
+ {t:'plan',plan:true,n:"Arena Entertainment District hotel (planned)",a:"Toyota Arena district",r:null,m:"n/a",lat:34.0740,lng:-117.5600,cls:"Planned luxury hotel, room count not announced",s:"Not yet open. Part of a pedestrian entertainment district with 70,000 sq ft of commercial space and 700 apartments; later phases include a performing arts theatre and a California Sports Hall of Fame.",src:[SRC.city]},
+ {t:'plan',plan:true,n:"Stadium Village hotel (planned)",a:"Riverside Dr at Vineyard Ave, Ontario Sports Empire",r:227,m:"n/a",lat:34.0060,lng:-117.5980,cls:"Planned, part of the Sports Empire's Stadium Village",s:"Not yet open. Announced as a 227-room hotel beside ONT Field (6,500-seat Minor League stadium, opened April 2026) and the community sports complex (8 diamonds, 8 soccer fields, opening October 2026). Expect youth-tournament and game-day weekend demand.",note:"The City's May 2024 site plan showed a 290-room dual-brand hotel; the Oct 2025 press release says 227.",src:[SRC.sepr,SRC.city]}
+];
+function nameHTML(h){const u=h.web||h.gocal;return u?`<a href="${u}" target="_blank" rel="noopener">${h.n}</a>`:h.n;}
+function imgHTML(h){return h.img?`<img class="hphoto" src="${h.img}" alt="" loading="lazy" onerror="this.style.display='none'">`:'';}
+const SHUT={l:'ONT hotel shuttle list',u:'https://www.flyontario.com/parking-transports/hotel-shuttles'};
+function shuttleHTML(h){return h.shuttle?`<span class="badge">ONT courtesy shuttle</span>`:(h.plan?'':`<span class="badge off">No airport shuttle listed</span>`);}
+function svHTML(h){return `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.n+', '+h.a+', Ontario, CA')}" target="_blank" rel="noopener">Open in Google Maps</a>`;}
+function srcHTML(h){
+  let out='';
+  if(h.shuttle) out+=`<a href="${SHUT.u}" target="_blank" rel="noopener">${SHUT.l}</a>`;
+  if(h.web) out+=(out?' &middot; ':'')+`<a href="${h.web}" target="_blank" rel="noopener">Official site</a>`;
+  if(h.gocal) out+=(out?' &middot; ':'')+`<a href="${h.gocal}" target="_blank" rel="noopener">GOCAL listing</a>`;
+  h.src.forEach(s=>{out+=(out?' &middot; ':'')+`<a href="${s.u}" target="_blank" rel="noopener">${s.l}</a>`;});
+  if(!out) out='No published room count found.';
+  return out;
+}
+const LM=[["Ontario Convention Center",34.0650,-117.5995],["Ontario Mills",34.0750,-117.5510],["Toyota Arena",34.0755,-117.5612],["ONT Field / Ontario Sports Empire",34.0055,-117.6000],["Downtown Ontario",34.0630,-117.6510]];
+
+const panel=document.getElementById('panel');
+document.getElementById('aboutTog').onclick=e=>{e.preventDefault();const a=document.getElementById('about');a.style.display=a.style.display==='none'?'block':'none';};
+document.getElementById('ptog').onclick=()=>{panel.classList.toggle('open');document.getElementById('pind').textContent=panel.classList.contains('open')?'tap to hide':'tap for legend & controls';};
+const map=L.map('map',{zoomControl:true}).setView([34.03,-117.60],12);
+map.on('popupopen',()=>{panel.classList.remove('open');document.getElementById('pind').textContent='tap for legend & controls';});
+const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
+const ref=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+const lab=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+const streets=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
+const satGroup=L.layerGroup([sat,ref,lab]).addTo(map);
+document.getElementById('sat').onchange=e=>{if(e.target.checked){map.removeLayer(streets);satGroup.addTo(map);}else{map.removeLayer(satGroup);streets.addTo(map);}};
+
+/* approximate city limits */
+L.polygon([[34.095,-117.683],[34.095,-117.52],[33.925,-117.52],[33.925,-117.65],[34.0,-117.65],[34.0,-117.683]],{color:'#e6c86a',weight:2,dashArray:'6 4',fill:false}).addTo(map);
+
+LM.forEach(l=>L.marker([l[1],l[2]],{icon:L.divIcon({className:'',html:`<div class="lm">${l[0]}</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(map));
+
+H.forEach(h=>{
+  const d=Math.round(14+Math.sqrt(h.r||60)*0.9);
+  const icon=L.divIcon({className:'',html:`<div class="mk${h.plan?' plan':''}" style="width:${d}px;height:${d}px;${h.plan?'':'background:'+CAT[h.t].c}">${h.r==null?'?':h.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
+  const share=(h.plan||h.r==null)?'n/a':(100*h.r/TMD).toFixed(1)+'%';
+  const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
+  L.marker([h.lat,h.lng],{icon}).addTo(map).bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
+   <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
+   <p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
+});
+/* regional layers */
+const railG=L.layerGroup().addTo(map), mlG=L.layerGroup().addTo(map), laG=L.layerGroup().addTo(map), stG=L.layerGroup();
+TRANSIT.metro.forEach(l=>{L.polyline(l.pts,{color:'#fff',weight:7,opacity:.7}).addTo(railG);L.polyline(l.pts,{color:l.c,weight:4}).addTo(railG).bindTooltip('Metro '+l.n,{sticky:true});});
+TRANSIT.metrolink.forEach(l=>{L.polyline(l.pts,{color:'#fff',weight:6,opacity:.6}).addTo(mlG);L.polyline(l.pts,{color:'#444',weight:3,dashArray:'8 6'}).addTo(mlG).bindTooltip(l.n,{sticky:true});});
+TRANSIT.stations.forEach(s=>L.circleMarker([s[1],s[2]],{radius:3,color:'#222',weight:1,fillColor:'#fff',fillOpacity:1}).bindTooltip(s[0]).addTo(stG));
+TRANSIT.mlStations.forEach(s=>L.circleMarker([s[1],s[2]],{radius:4,color:'#444',weight:1.5,fillColor:'#fff',fillOpacity:1}).bindTooltip('Metrolink: '+s[0]).addTo(stG));
+map.on('zoomend',()=>{const on=map.getZoom()>=12&&document.getElementById('tRail').checked;if(on&&!map.hasLayer(stG))stG.addTo(map);if(!on&&map.hasLayer(stG))map.removeLayer(stG);});
+TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:'<div class="vm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(laG).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate.</p>`,{maxWidth:300});});
+const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
+tog('tRail',railG);tog('tML',mlG);tog('tLA28',laG);
+/* connectors */
+const CG={};const legend=document.getElementById('connLegend');const togs=document.getElementById('connToggles');
+CONN.layers.forEach(c=>{
+  const g=L.layerGroup().addTo(map);CG[c.id]=g;
+  const pop=`<h2>${c.name}</h2><p class="seas">${c.desc}</p><p class="seas"><i>Sources</i>${c.src.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${x[0]}</a>`).join(' &middot; ')}</p><p class="note">Alignment drawn by station location; approximate.</p>`;
+  L.polyline(c.pts,{color:'#fff',weight:c.weight+4,opacity:.6}).addTo(g);
+  const ln=L.polyline(c.pts,{color:c.color,weight:c.weight,dashArray:c.dash||null,lineCap:'round'}).addTo(g).bindPopup(pop,{maxWidth:320}).bindTooltip(c.name,{sticky:true});
+  c.stations.forEach(st=>L.circleMarker([st[1],st[2]],{radius:5,color:c.color,weight:2,fillColor:'#fff',fillOpacity:1}).addTo(g).bindPopup(`<h2>${st[0]}</h2><p class="addr">${c.name}</p>`+pop.replace(/<h2>.*?<\/h2>/,''),{maxWidth:320}).bindTooltip(st[0]));
+  const lab=document.createElement('label');lab.innerHTML=`<input type="checkbox" id="c_${c.id}" checked> <span style="color:${c.color};font-weight:700">&#9644;</span> ${c.name.split(' (')[0]}`;togs.appendChild(lab);
+  lab.querySelector('input').onchange=e=>e.target.checked?g.addTo(map):map.removeLayer(g);
+});
+document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
+document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
+document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
+document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
+map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
+</script>
+</body>
+</html>
