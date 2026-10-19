@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792437616"></script>
-<script src="la_transit.js?v=1792437616"></script>
-<script src="neighbors.js?v=1792437616"></script>
-<script src="connectors.js?v=1792437616"></script>
+<script src="rates_history.js?v=1792439210"></script>
+<script src="la_transit.js?v=1792439210"></script>
+<script src="neighbors.js?v=1792439210"></script>
+<script src="connectors.js?v=1792439210"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -278,7 +278,13 @@ let gSat=null,gRoad=null,useGoogle=false;
 function currentBase(){return document.getElementById('sat').checked?(useGoogle?gSat:satGroup):(useGoogle?gRoad:streets);}
 function setBase(){[satGroup,streets,gSat,gRoad].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l);});currentBase().addTo(map);}
 document.getElementById('sat').onchange=setBase;
-window.onGoogleReady=function(){try{if(!L.gridLayer.googleMutant)return;gSat=L.gridLayer.googleMutant({type:'hybrid',maxZoom:20});gRoad=L.gridLayer.googleMutant({type:'roadmap',maxZoom:20});useGoogle=true;setBase();}catch(e){console.warn('Google basemap unavailable',e);}};
+function revertBase(why){if(!useGoogle)return;useGoogle=false;console.warn('Google basemap unavailable ('+why+'); using Esri/CARTO instead');setBase();}
+window.gm_authFailure=function(){revertBase('auth');};
+window.onGoogleReady=function(){try{if(!L.gridLayer.googleMutant||!window.google||!google.maps)return;
+ gSat=L.gridLayer.googleMutant({type:'hybrid',maxZoom:20});gRoad=L.gridLayer.googleMutant({type:'roadmap',maxZoom:20});
+ let ok=false;const arm=l=>l.on('spawned',e=>{try{google.maps.event.addListenerOnce(e.mapObject,'tilesloaded',()=>{ok=true;});}catch(_){}});arm(gSat);arm(gRoad);
+ useGoogle=true;setBase();setTimeout(()=>{if(!ok)revertBase('no tiles after 8 s');},8000);
+}catch(e){console.warn('Google basemap unavailable',e);revertBase('error');}};
 if(window._gmLoaded)window.onGoogleReady();
 
 /* approximate city limits */
