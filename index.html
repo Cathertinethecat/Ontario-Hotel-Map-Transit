@@ -49,6 +49,8 @@
   .sem::after{content:'';position:absolute;inset:5px;border-radius:2px;background:#2f7d4e}
   .splan{display:block;width:100%;height:auto;border-radius:3px;margin:0 0 8px;background:#efece2}
   .vm::after{content:'';position:absolute;inset:5px;border-radius:50%;background:#d4a017}
+  .vm.cA{width:30px;height:30px;border-width:4px}.vm.cB{width:24px;height:24px}.vm.cC{width:20px;height:20px}.vm.cD{width:18px;height:18px;border-color:#b0b0b0}.vm.cD::after{background:#b0b0b0}.vm.cU{width:18px;height:18px;border-color:#fff;border-style:dashed}.vm.cU::after{background:#fff}
+  #venueToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
   .lm{background:rgba(31,78,121,.9);color:#fff;border-radius:3px;padding:2px 6px;font:italic 11px "Times New Roman",Times,serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.5)}
   @media (max-width:600px), (pointer:coarse) and (max-width:900px){
     .panel{left:6px;right:6px;bottom:22px;max-width:none;padding:6px 10px}
@@ -58,8 +60,8 @@
     .panel p{font-size:.78rem}
     .panel button,.panel label{font-size:.78rem;padding:3px 7px}
     .panel .btns{gap:4px;margin-top:6px}
-    #tierToggles label,#connToggles label,#cityToggles label,.oc label{width:calc(50% - 4px);padding:1px 0}
-    #tierToggles label[style],#cityToggles label[style],.oc label[style],#otherToggles>label,#connToggles b{width:100%}
+    #tierToggles label,#connToggles label,#cityToggles label,.oc label,#venueToggles label{width:calc(50% - 4px);padding:1px 0}
+    #tierToggles label[style],#cityToggles label[style],.oc label[style],#otherToggles>label,#venueToggles label[style],#connToggles b{width:100%}
     .leaflet-popup-content{font-size:13.5px;margin:10px 12px}
     .leaflet-popup-content h2{font-size:1rem}
     .kv b{font-size:1.1rem}
@@ -96,7 +98,12 @@
     
   </div>
   <div class="btns" id="connToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllConn" checked> <b style="font-size:.85rem">Connectors</b> <span style="color:#5f5b50">(all on/off; tap a line for details)</span></label></div>
-  <div class="btns" id="venueToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tLA28" checked> <b style="font-size:.85rem">LA28 venues</b> <span style="color:#5f5b50">(42, <span style="color:#d4a017">&#9673;</span>)</span></label></div>
+  <div class="btns" id="venueToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tLA28" checked> <b style="font-size:.85rem">LA28 venues</b> <span style="color:#5f5b50">by spectator capacity</span></label>
+    <label><input type="checkbox" data-vt="A" checked> <span style="color:#d4a017;font-size:1.1em">&#9673;</span> 50,000 and up</label>
+    <label><input type="checkbox" data-vt="B" checked> <span style="color:#d4a017">&#9673;</span> 15,000 to 49,999</label>
+    <label><input type="checkbox" data-vt="C" checked> <span style="color:#d4a017;font-size:.85em">&#9673;</span> 5,000 to 14,999</label>
+    <label><input type="checkbox" data-vt="D" checked> <span style="color:#9e9e9e;font-size:.85em">&#9673;</span> Under 5,000</label>
+    <label><input type="checkbox" data-vt="U" checked> <span style="color:#777;font-size:.85em">&#9711;</span> Not yet published</label></div>
   <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
     <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
     <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
@@ -110,7 +117,7 @@
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
     <p class="note">40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned (City of Ontario, May 2024). Room counts as of Oct 2026, each cited on its card. Hotel roster and addresses from GOCAL; positions placed by address. Hotels in Pomona, Claremont, Montclair, Upland and Chino come from HotelGuides and HotelPlanner listings (Oct 2026), room counts as those listings give them, placed by address and approximate; they are dash-outlined on the map. City limits are the official boundaries from the <a href="https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0" target="_blank" rel="noopener">California Board of Equalization city layer</a>, loaded live.</p>
-    <p class="note">Metro rail geometry from LA Metro’s published GTFS feed, stitched to the 2025 network. Metrolink lines and LA28 venues placed by station and venue location, approximate. Venues and sports from la28.org: all 41 venues in the LA region plus San Diego Stadium (soccer semifinals and bronze matches); the other soccer stadiums, softball and slalom are out of state and not shown. Olympic competition dates, days and sessions per venue from LA28’s <a href="https://la28.org/content/dam/latwentyeight/competition-schedule-imagery/uploaded-july-29-oly-version-4-0/LA28OlympicGamesCompetitionScheduleByEventV4.0.pdf" target="_blank" rel="noopener">Competition Schedule by Event, v4.0</a> (July 29, 2026), subject to change; medal sessions are those LA28 types Final or Bronze; late sessions end at 22:00 or later.</p>
+    <p class="note">Metro rail geometry from LA Metro’s published GTFS feed, stitched to the 2025 network. Metrolink lines and LA28 venues placed by station and venue location, approximate. Venues and sports from la28.org: all 41 venues in the LA region plus San Diego Stadium (soccer semifinals and bronze matches); the other soccer stadiums, softball and slalom are out of state and not shown. Venue spectator capacities are a proxy compiled from operator and reported figures (Wikipedia, Venues of the 2028 Summer Olympics, Oct 2026); LA28 has published none, and temporary venues show "not yet published". Olympic competition dates, days and sessions per venue from LA28’s <a href="https://la28.org/content/dam/latwentyeight/competition-schedule-imagery/uploaded-july-29-oly-version-4-0/LA28OlympicGamesCompetitionScheduleByEventV4.0.pdf" target="_blank" rel="noopener">Competition Schedule by Event, v4.0</a> (July 29, 2026), subject to change; medal sessions are those LA28 types Final or Bronze; late sessions end at 22:00 or later.</p>
     <p class="note">No rail reaches ONT or the hotel district; nearest stations are Metrolink East Ontario and Rancho Cucamonga, and the A Line ends at Pomona North. No shared hotel shuttle: 14 hotels run their own vans to ONT (badged on cards); <a href="https://omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf" target="_blank" rel="noopener">Omnitrans Route 61</a> links Holt Blvd, ONT and Ontario Mills every 20 minutes but skips the Convention Center.</p>
   </div>
   </div>
@@ -238,7 +245,7 @@ H.forEach(h=>{
    ${ratesHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
 /* regional layers */
-const railG=L.layerGroup().addTo(map), mlG=L.layerGroup().addTo(map), laG=L.layerGroup().addTo(map), stG=L.layerGroup();
+const railG=L.layerGroup().addTo(map), mlG=L.layerGroup().addTo(map), laG=L.layerGroup().addTo(map),laT={A:L.layerGroup().addTo(laG),B:L.layerGroup().addTo(laG),C:L.layerGroup().addTo(laG),D:L.layerGroup().addTo(laG),U:L.layerGroup().addTo(laG)}, stG=L.layerGroup();
 TRANSIT.metro.forEach(l=>{L.polyline(l.pts,{color:'#fff',weight:7,opacity:.7}).addTo(railG);L.polyline(l.pts,{color:l.c,weight:4}).addTo(railG).bindTooltip('Metro '+l.n,{sticky:true});});
 TRANSIT.metrolink.forEach(l=>{L.polyline(l.pts,{color:'#fff',weight:6,opacity:.6}).addTo(mlG);L.polyline(l.pts,{color:'#444',weight:3,dashArray:'8 6'}).addTo(mlG).bindTooltip(l.n,{sticky:true});});
 TRANSIT.stations.forEach(s=>L.circleMarker([s[1],s[2]],{radius:3,color:'#222',weight:1,fillColor:'#fff',fillOpacity:1}).bindTooltip(s[0]).addTo(stG));
@@ -251,9 +258,13 @@ function schedHTML(slug){const c=TRANSIT.schedule&&TRANSIT.schedule[slug];if(!c)
  if(x.length)t+=` (${x.join(', ')})`;
  if(c.sports.length>1)t+='<br>'+c.sports.map(s=>`${s[0]}: ${s[1]}, ${s[2]} session${s[2]>1?'s':''}`).join('<br>');
  t+=`<details class="sch"><summary>Session list</summary><div>${c.list.map(l=>`<span>${l[0]} &middot; ${l[1]} &middot; ${l[2]?l[2]+', ':''}${l[3]}</span>`).join('')}</div></details></p>`;return t;}
-TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:'<div class="vm" style="position:relative"></div>',iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-11]})}).addTo(laG).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no attendance figures.</p>`,{maxWidth:300});});
+TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';const cp=(TRANSIT.cap&&TRANSIT.cap[v[0]])||[null,'U',''];const sz={A:30,B:24,C:20,D:18,U:18}[cp[1]];L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:`<div class="vm c${cp[1]}" style="position:relative"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2]})}).addTo(laT[cp[1]]).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}<p class="seas"><i>Spectator capacity</i>${cp[0]?cp[0].toLocaleString()+(cp[2]?' ('+cp[2]+')':''):'Not yet published'+(cp[2]?' ('+cp[2]+')':'')}</p>${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a> &middot; <a href="https://en.wikipedia.org/wiki/Venues_of_the_2028_Summer_Olympics_and_Paralympics" target="_blank" rel="noopener">Capacity: Wikipedia, LA28 venues</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no capacities or attendance figures; the capacity shown is the operator or reported Games figure as compiled on Wikipedia (Oct 2026) and is a proxy, not an LA28 number.</p>`,{maxWidth:300});});
 const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
-tog('tRail',railG);tog('tML',mlG);tog('tLA28',laG);
+tog('tRail',railG);tog('tML',mlG);
+const vtCbs=[...document.querySelectorAll('#venueToggles input[data-vt]')];const vtAll=document.getElementById('tLA28');
+function syncVt(){const n=vtCbs.filter(c=>c.checked).length;vtAll.checked=n===vtCbs.length;vtAll.indeterminate=n>0&&n<vtCbs.length;}
+vtCbs.forEach(cb=>cb.onchange=e=>{const g=laT[cb.dataset.vt];e.target.checked?g.addTo(laG):laG.removeLayer(g);syncVt();});
+vtAll.onchange=e=>{const on=e.target.checked;vtCbs.forEach(cb=>{cb.checked=on;const g=laT[cb.dataset.vt];on?g.addTo(laG):laG.removeLayer(g);});syncVt();};
 const ovCbs=['tRail','tML'].map(id=>document.getElementById(id));const ovAll=document.getElementById('tAllOverlays');
 function syncOv(){const n=ovCbs.filter(c=>c.checked).length;ovAll.checked=n===ovCbs.length;ovAll.indeterminate=n>0&&n<ovCbs.length;}
 ovCbs.forEach(cb=>cb.addEventListener('change',syncOv));
@@ -304,7 +315,7 @@ function makeSection(masterId){const m=document.getElementById(masterId);if(!m)r
  const wrap=document.createElement('div');wrap.className='grp';let n=head.nextSibling;while(n){const nx=n.nextSibling;if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))wrap.appendChild(n);n=nx;}box.appendChild(wrap);
  const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
  b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
-['tAllOverlays','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_ORDER.forEach(c=>makeSection('oc_'+c.toLowerCase()+'_all'));
+['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_ORDER.forEach(c=>makeSection('oc_'+c.toLowerCase()+'_all'));
 </script>
 </body>
 </html>
