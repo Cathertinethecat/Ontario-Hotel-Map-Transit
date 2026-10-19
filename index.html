@@ -49,6 +49,23 @@
   .splan{display:block;width:100%;height:auto;border-radius:3px;margin:0 0 8px;background:#efece2}
   .vm::after{content:'';position:absolute;inset:5px;border-radius:50%;background:#d4a017}
   .lm{background:rgba(31,78,121,.9);color:#fff;border-radius:3px;padding:2px 6px;font:italic 11px "Times New Roman",Times,serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+  @media (max-width:600px), (pointer:coarse) and (max-width:900px){
+    .panel{left:6px;right:6px;bottom:22px;max-width:none;padding:6px 10px}
+    .panel h1{font-size:.95rem}
+    .panel h1 small{font-size:.72rem}
+    .panel .body{max-height:42vh;margin-top:4px}
+    .panel p{font-size:.78rem}
+    .panel button,.panel label{font-size:.78rem;padding:3px 7px}
+    .panel .btns{gap:4px;margin-top:6px}
+    #tierToggles label,#connToggles label{width:calc(50% - 4px);padding:1px 0}
+    #tierToggles label[style],#connToggles b{width:100%}
+    .leaflet-popup-content{font-size:13.5px;margin:10px 12px}
+    .leaflet-popup-content h2{font-size:1rem}
+    .kv b{font-size:1.1rem}
+    .seas,.rt{font-size:.82rem}
+    .note{font-size:.72rem}
+    .lm{font-size:10px;padding:1px 4px}
+  }
 </style>
 </head>
 <body>
@@ -71,7 +88,7 @@
   </div>
   <div class="btns" id="connToggles"><b style="font-size:.85rem;width:100%">Connectors (tap a line for details)</b></div>
   <div class="btns"><button id="bCorr">Pomona to Rancho corridor</button></div>
-  <div class="btns" id="tierToggles"><b style="font-size:.85rem;width:100%">Hotels by tier</b>
+  <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
     <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
     <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
     <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
@@ -237,7 +254,10 @@ CONN.layers.forEach(c=>{
 });
 document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
-document.querySelectorAll('#tierToggles input').forEach(cb=>cb.onchange=e=>{const g=TG[e.target.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);});
+const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];const allCb=document.getElementById('tAllHotels');
+function syncAll(){const n=tierCbs.filter(c=>c.checked).length;allCb.checked=n===tierCbs.length;allCb.indeterminate=n>0&&n<tierCbs.length;}
+tierCbs.forEach(cb=>cb.onchange=e=>{const g=TG[e.target.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);syncAll();});
+allCb.onchange=e=>{tierCbs.forEach(cb=>{cb.checked=e.target.checked;const g=TG[cb.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);});syncAll();};
 document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
 document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
 map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
