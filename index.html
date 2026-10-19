@@ -7,9 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="la_transit.js?v=1792394945"></script>
-<script src="neighbors.js?v=1792394945"></script>
-<script src="connectors.js?v=1792394945"></script>
+<script src="rates_history.js?v=1792398600"></script>
+<script src="la_transit.js?v=1792398600"></script>
+<script src="neighbors.js?v=1792398600"></script>
+<script src="connectors.js?v=1792398600"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -229,6 +230,14 @@ function ratesHTML(h){
   const rows=h.rates.map(r=>`<tr><td>${r[0]}</td><td style="text-align:right;white-space:nowrap">${r[1]}</td></tr>`).join('');
   return `<p class="seas"><i>Room rates (nightly, Oct 2026 snapshot)</i></p><table class="rt">${rows}</table><p class="note">Typical nightly price with taxes and fees for 2 guests, from <a href="${h.rurl}" target="_blank" rel="noopener">${h.rurl.includes('hotels.com')?'Hotels.com':'Kayak'}</a> searches in Oct 2026. Rates change daily and climb on event dates. ${book}</p>`;
 }
+function histHTML(h){const rows=(typeof RATES_HIST!=="undefined"?RATES_HIST:[]).map(e=>({m:e.m,d:e.d,r:e.rates[h.n]})).filter(x=>x.r);if(!rows.length)return '';
+ const mon=m=>new Date(m+'-15').toLocaleString('en-US',{month:'short',year:'numeric'});const mid=r=>(r.lo+r.hi)/2;
+ let t=`<p class="seas"><i>Rate history (monthly snapshots)</i></p><table class="rt">`+rows.map(x=>`<tr><td>${mon(x.m)}</td><td style="text-align:right;white-space:nowrap">$${x.r.lo} to $${x.r.hi}</td></tr>`).join('')+`</table>`;
+ const q={};rows.forEach(x=>{const [y,mm]=x.m.split('-').map(Number);const k=`Q${Math.ceil(mm/3)} ${y}`;(q[k]=q[k]||[]).push(mid(x.r));});
+ const se={};rows.forEach(x=>{const mm=+x.m.split('-')[1];const k=mm<=2||mm===12?'Winter (Dec to Feb)':mm<=5?'Spring (Mar to May)':mm<=8?'Summer (Jun to Aug)':'Fall (Sep to Nov)';(se[k]=se[k]||[]).push(mid(x.r));});
+ const avg=a=>Math.round(a.reduce((p,c)=>p+c,0)/a.length);
+ t+=`<p class="seas"><i>Quarterly average (midpoint of range)</i></p><table class="rt">`+Object.keys(q).map(k=>`<tr><td>${k}</td><td style="text-align:right">$${avg(q[k])}<span style="color:#5f5b50"> (${q[k].length} mo)</span></td></tr>`).join('')+`</table>`;
+ t+=`<p class="seas"><i>Seasonal average</i></p><table class="rt">`+['Winter (Dec to Feb)','Spring (Mar to May)','Summer (Jun to Aug)','Fall (Sep to Nov)'].map(k=>`<tr><td>${k}</td><td style="text-align:right">${se[k]?'$'+avg(se[k])+'<span style="color:#5f5b50"> ('+se[k].length+' mo)</span>':'<span style="color:#5f5b50">no snapshot yet</span>'}</td></tr>`).join('')+`</table><p class="note">Each month's figure is the lowest and highest typical nightly price seen across room types (2 guests, taxes and fees) on the snapshot date; averages use the midpoint. Snapshots are taken monthly and accumulate; seasonal rows fill in over the year.</p>`;return t;}
 function srcHTML(h){
   let out='';
   if(h.shuttle) out+=`<a href="${SHUT.u}" target="_blank" rel="noopener">${SHUT.l}</a>`;
@@ -290,7 +299,7 @@ H.forEach(h=>{
   const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
   L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]).bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
    <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
-   ${ratesHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
+   ${ratesHTML(h)}${histHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
 /* regional layers */
 const railG=L.layerGroup().addTo(map), mlG=L.layerGroup().addTo(map), laG=L.layerGroup().addTo(map),laT={A:L.layerGroup().addTo(laG),B:L.layerGroup().addTo(laG),C:L.layerGroup().addTo(laG),D:L.layerGroup().addTo(laG),U:L.layerGroup().addTo(laG)}, stG=L.layerGroup();
