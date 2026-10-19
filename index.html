@@ -207,7 +207,7 @@ const cityLayers={};const cityTogs=document.getElementById('cityToggles');
 Object.keys(CITY_STYLE).forEach(n=>{cityLayers[n]=L.layerGroup().addTo(cityG);const lab=document.createElement('label');lab.innerHTML=`<input type="checkbox" data-city="${n}" checked> <span style="color:${CITY_STYLE[n].color};font-weight:700;text-shadow:0 0 2px #555">${CITY_STYLE[n].dashArray?'&#9476;':'&#9644;'}</span> ${n}`;cityTogs.appendChild(lab);lab.querySelector('input').onchange=e=>{e.target.checked?cityLayers[n].addTo(cityG):cityG.removeLayer(cityLayers[n]);syncCity();};});
 const cityCbs=[...cityTogs.querySelectorAll('input[data-city]')];const cityAll=document.getElementById('tAllCity');
 function syncCity(){const k=cityCbs.filter(c=>c.checked).length;cityAll.checked=k===cityCbs.length;cityAll.indeterminate=k>0&&k<cityCbs.length;}
-cityAll.onchange=e=>{cityCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.onchange({target:cb});}});syncCity();};
+cityAll.onchange=e=>{const on=e.target.checked;cityCbs.forEach(cb=>{if(cb.checked!==on){cb.checked=on;cb.onchange({target:cb});}});syncCity();};
 fetch("https://gis.conservation.ca.gov/server/rest/services/Base/Base_BOECities/FeatureServer/0/query?where=CITY%20IN%20('Rancho%20Cucamonga','Ontario','Upland','Montclair','Fontana','Chino','Eastvale','Pomona','Claremont')&outFields=CITY&outSR=4326&f=geojson")
  .then(r=>r.json()).then(gj=>{
    L.geoJSON(gj,{style:f=>Object.assign({fill:false,opacity:.95},CITY_STYLE[f.properties.CITY]||{color:'#fff',weight:2,dashArray:'6 4'}),
@@ -248,7 +248,7 @@ tog('tRail',railG);tog('tML',mlG);tog('tLA28',laG);
 const ovCbs=['tRail','tML','tLA28'].map(id=>document.getElementById(id));const ovAll=document.getElementById('tAllOverlays');
 function syncOv(){const n=ovCbs.filter(c=>c.checked).length;ovAll.checked=n===ovCbs.length;ovAll.indeterminate=n>0&&n<ovCbs.length;}
 ovCbs.forEach(cb=>cb.addEventListener('change',syncOv));
-ovAll.onchange=e=>{ovCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.onchange({target:cb});}});syncOv();};
+ovAll.onchange=e=>{const on=e.target.checked;ovCbs.forEach(cb=>{if(cb.checked!==on){cb.checked=on;cb.onchange({target:cb});}});syncOv();};
 /* connectors */
 const CG={};const legend=document.getElementById('connLegend');const togs=document.getElementById('connToggles');
 CONN.layers.forEach(c=>{
@@ -263,13 +263,13 @@ CONN.layers.forEach(c=>{
 const connCbs=[...document.querySelectorAll('#connToggles input[id^="c_"]')];const connAll=document.getElementById('tAllConn');
 function syncConn(){const n=connCbs.filter(c=>c.checked).length;connAll.checked=n===connCbs.length;connAll.indeterminate=n>0&&n<connCbs.length;}
 connCbs.forEach(cb=>cb.addEventListener('change',syncConn));
-connAll.onchange=e=>{connCbs.forEach(cb=>{if(cb.checked!==e.target.checked){cb.checked=e.target.checked;cb.dispatchEvent(new Event('change'));}});syncConn();};
+connAll.onchange=e=>{const on=e.target.checked;connCbs.forEach(cb=>{if(cb.checked!==on){cb.checked=on;cb.dispatchEvent(new Event('change'));}});syncConn();};
 document.getElementById('bCorr').onclick=()=>map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
 document.getElementById('bLA').onclick=()=>map.fitBounds([[33.70,-118.55],[34.25,-117.25]]);
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];const allCb=document.getElementById('tAllHotels');
 function syncAll(){const n=tierCbs.filter(c=>c.checked).length;allCb.checked=n===tierCbs.length;allCb.indeterminate=n>0&&n<tierCbs.length;}
 tierCbs.forEach(cb=>cb.onchange=e=>{const g=TG[e.target.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);syncAll();});
-allCb.onchange=e=>{tierCbs.forEach(cb=>{cb.checked=e.target.checked;const g=TG[cb.dataset.tier];e.target.checked?g.addTo(map):map.removeLayer(g);});syncAll();};
+allCb.onchange=e=>{const on=e.target.checked;tierCbs.forEach(cb=>{cb.checked=on;const g=TG[cb.dataset.tier];on?g.addTo(map):map.removeLayer(g);});syncAll();};
 document.getElementById('bCity').onclick=()=>map.fitBounds([[33.925,-117.683],[34.095,-117.52]]);
 document.getElementById('bDist').onclick=()=>map.fitBounds([[34.036,-117.615],[34.085,-117.540]]);
 map.fitBounds([[34.035,-117.775],[34.125,-117.52]]);
