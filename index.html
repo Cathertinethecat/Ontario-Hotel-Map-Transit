@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="la_transit.js?v=1792394631"></script>
-<script src="neighbors.js?v=1792394631"></script>
-<script src="connectors.js?v=1792394631"></script>
+<script src="la_transit.js?v=1792394945"></script>
+<script src="neighbors.js?v=1792394945"></script>
+<script src="connectors.js?v=1792394945"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -73,7 +73,7 @@
   .secbtn{font:inherit;font-size:.9rem;border:none;background:none;padding:0 6px 0 0;cursor:pointer;color:#1f4e79;line-height:1}
   .grp{display:none;width:100%}
   .oc{width:100%;margin-top:2px}
-  .oc label{display:block;width:100%;border:none;padding:2px 0;background:none}
+  .oc label{display:inline-block;width:calc(50% - 4px);border:none;padding:2px 0;background:none}.oc label[style]{width:100%}
   .mk.oth{border:1.5px solid #fff;outline:1.5px dashed #1d1c19}
   .cdot{position:relative}.cdot .mk{position:absolute;left:50%;top:0;transform:translateX(-50%);cursor:pointer}.cdot .ct{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(31,78,121,.92);color:#fff;border-radius:3px;padding:1px 6px;font:italic 11px "Times New Roman",Times,serif;box-shadow:0 1px 3px rgba(0,0,0,.5);cursor:pointer}
   .cgather{background:rgba(255,255,255,.95);color:#1f4e79;border:1px solid #1f4e79;border-radius:3px;padding:1px 6px;font:11px "Times New Roman",Times,serif;white-space:nowrap;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -110,7 +110,7 @@
     <label><input type="checkbox" data-vt="C" checked> <span style="color:#d4a017;font-size:.85em">&#9673;</span> 5,000 to 14,999</label>
     <label><input type="checkbox" data-vt="D" checked> <span style="color:#9e9e9e;font-size:.85em">&#9673;</span> Under 5,000</label>
     <label><input type="checkbox" data-vt="U" checked> <span style="color:#777;font-size:.85em">&#9711;</span> Not yet published</label></div>
-  <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
+  <div class="btns" id="tierToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllHotels" checked> <b style="font-size:.85rem">Ontario hotels</b> <span style="color:#5f5b50">(all tiers on/off)</span></label>
     <label><input type="checkbox" data-tier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
     <label><input type="checkbox" data-tier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
     <label><input type="checkbox" data-tier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
@@ -118,7 +118,14 @@
     <label><input type="checkbox" data-tier="plan" checked> <span style="color:#b3412f">&#9711;</span> Planned</label>
     <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="onExpand">Spread Ontario</button><button type="button" id="onCollapse">Gather Ontario</button></div>
   </div>
-  <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other cities' hotels</b> <span style="color:#5f5b50">(Inland Empire valley and east San Gabriel Valley; 35 areas listed)</span></label><div class="btns" style="margin-top:4px"><button type="button" id="ocExpand">Spread all</button><button type="button" id="ocCollapse">Gather all</button></div></div>
+  <div class="btns" id="otherToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllOther" checked> <b style="font-size:.85rem">Other cities' hotels</b> <span style="color:#5f5b50">(by county, nearest first)</span></label>
+    <div class="btns" style="margin-top:4px;width:100%"><button type="button" id="ocExpand">Spread all</button><button type="button" id="ocCollapse">Gather all</button></div>
+    <div style="width:100%;color:#5f5b50;font-size:.8rem;margin-top:4px">Tier filter for all other cities</div>
+    <label><input type="checkbox" data-otier="full" checked> <span style="color:#b3412f">&#9679;</span> Full service</label>
+    <label><input type="checkbox" data-otier="select" checked> <span style="color:#c98a1c">&#9679;</span> Select service</label>
+    <label><input type="checkbox" data-otier="ext" checked> <span style="color:#2f7d4e">&#9679;</span> Extended stay</label>
+    <label><input type="checkbox" data-otier="econ" checked> <span style="color:#6b5ea8">&#9679;</span> Economy</label>
+    <div id="countyBox" style="width:100%"></div></div>
   <div class="btns" id="cityToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllCity" checked> <b style="font-size:.85rem">City limits</b> <span style="color:#5f5b50">(all on/off)</span></label></div>
   <p class="note" id="connLegend"></p>
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
@@ -329,11 +336,21 @@ document.getElementById('bLA').onclick=()=>map.fitBounds([[33.55,-118.60],[34.45
 document.getElementById('bLA28').onclick=()=>{const vs=TRANSIT.venues.filter(v=>v[3]>33.5&&v[4]>-118.7);map.fitBounds(vs.map(v=>[v[3],v[4]]),{padding:[20,20]});};
 /* other cities' hotels */
 const tierCbs=[...document.querySelectorAll('#tierToggles input[data-tier]')];
-const OC_ORDER=['Ontario','El Monte','South El Monte','Baldwin Park','West Covina','Azusa','Glendora','San Dimas','La Puente','City of Industry','Hacienda and Rowland Heights','Walnut','Diamond Bar','Rancho Cucamonga','Pomona','Claremont','Montclair','Upland','Chino','Chino Hills','Fontana','Rialto','Colton','San Bernardino','Loma Linda','Redlands','Yucaipa','Eastvale','Jurupa Valley','Norco','Corona','Riverside','Moreno Valley','Perris'];const CITY_CENTER_FROM_LIMITS=OC_ORDER.filter(c=>c!=='Chino');const OG={};const ocBox=document.getElementById('otherToggles');
-OC_ORDER.filter(c=>c!=='Ontario'&&NH.some(x=>x.c===c)).forEach(city=>{const slug=city.toLowerCase().replace(/ /g,'-');OG[city]={};const tiers=[...new Set(NH.filter(x=>x.c===city).map(x=>x.t))];
+const ONT=[34.0633,-117.6509];const dist=c=>{const hs=NH.filter(x=>x.c===c);const la=hs.reduce((a,x)=>a+x.lat,0)/hs.length,ln=hs.reduce((a,x)=>a+x.lng,0)/hs.length;return Math.hypot(la-ONT[0],(ln-ONT[1])*0.83);};
+const COUNTY={'San Bernardino County':['Rancho Cucamonga','Upland','Montclair','Chino','Chino Hills','Fontana','Rialto','Colton','San Bernardino','Loma Linda','Redlands','Yucaipa','Highland','Grand Terrace'],
+ 'Riverside County':['Eastvale','Jurupa Valley','Norco','Corona','Riverside','Moreno Valley','Perris'],
+ 'Los Angeles County':['Pomona','Claremont','El Monte','South El Monte','Baldwin Park','West Covina','Azusa','Glendora','San Dimas','La Puente','City of Industry','Hacienda and Rowland Heights','Walnut','Diamond Bar','Covina','La Verne','Irwindale']};
+Object.keys(COUNTY).forEach(k=>COUNTY[k]=COUNTY[k].filter(c=>NH.some(x=>x.c===c)).sort((a,b)=>dist(a)-dist(b)));
+const OC_OTHER=[].concat(...Object.values(COUNTY));const OC_ORDER=['Ontario',...OC_OTHER];const CITY_CENTER_FROM_LIMITS=OC_ORDER.filter(c=>c!=='Chino');
+const OG={};OC_OTHER.forEach(c=>{OG[c]={};['full','select','ext','econ'].forEach(t=>OG[c][t]=L.layerGroup());});
+const countyBox=document.getElementById('countyBox');const CSTATE={};
+Object.keys(COUNTY).forEach(k=>{const slug=k.toLowerCase().replace(/ /g,'-');const cities=COUNTY[k];const n=cities.reduce((a,c)=>a+NH.filter(x=>x.c===c).length,0);
  const div=document.createElement('div');div.className='oc';div.id='oc_'+slug;
- div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${city}</b> <span style="color:#5f5b50">(${NH.filter(x=>x.c===city).length} listed)</span></label>`+tiers.map(t=>`<label><input type="checkbox" data-ocity="${city}" data-tier="${t}" checked> <span style="color:${CAT[t].c}">&#9679;</span> ${CAT[t].l.split(' / ')[0]}</label>`).join('');
- ocBox.appendChild(div);tiers.forEach(t=>OG[city][t]=L.layerGroup());});
+ div.innerHTML=`<label style="width:100%;padding:2px 0"><input type="checkbox" id="oc_${slug}_all" checked> <b style="font-size:.85rem">${k}</b> <span style="color:#5f5b50">(${cities.length} cities, ${n} hotels)</span></label><div class="btns" style="margin:2px 0 4px;width:100%"><button type="button" data-cx="${k}">Spread</button><button type="button" data-cg="${k}">Gather</button></div>`+cities.map(c=>`<label><input type="checkbox" data-ocity="${c}" checked> ${c} <span style="color:#5f5b50">(${NH.filter(x=>x.c===c).length})</span></label>`).join('');
+ countyBox.appendChild(div);CSTATE[k]={all:div.querySelector('#oc_'+slug+'_all'),cbs:[...div.querySelectorAll('input[data-ocity]')]};
+ div.querySelector('[data-cx]').onclick=()=>cities.forEach(c=>{if(ocState[c]){ocState[c].expanded=true;refreshCity(c);}});
+ div.querySelector('[data-cg]').onclick=()=>cities.forEach(c=>{if(ocState[c]){ocState[c].expanded=false;refreshCity(c);}});});
+const ocBox=document.getElementById('otherToggles');
 NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const icon=L.divIcon({className:'',html:`<div class="mk oth" style="width:${d}px;height:${d}px;background:${CAT[x.t].c}">${x.r==null?'?':x.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
  const src=x.s.map(k=>`<a href="${NSRC[k][1]}" target="_blank" rel="noopener">${NSRC[k][0]}</a>`).join(' &middot; ');
@@ -342,9 +359,10 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const meet=x.m==null?'n/a':x.m.toLocaleString();
  const book=x.web?`<a href="${x.web}" target="_blank" rel="noopener">Check live rates</a>`:'';
  L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]).bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
-const ocTierCbs=[...ocBox.querySelectorAll('input[data-ocity]')];const OC_OTHER=OC_ORDER.filter(c=>c!=='Ontario'&&NH.some(x=>x.c===c));const ocCityCbs=OC_OTHER.map(c=>document.getElementById('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));const ocAll=document.getElementById('tAllOther');
+const otCbs=[...ocBox.querySelectorAll('input[data-otier]')];const ocCityCbs=[...countyBox.querySelectorAll('input[data-ocity]')];const ocAll=document.getElementById('tAllOther');
+const cityCb=c=>ocCityCbs.find(x=>x.dataset.ocity===c);
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
-function syncOc(){OC_OTHER.forEach((c,i)=>{const cbs=ocTierCbs.filter(x=>x.dataset.ocity===c);setBox(ocCityCbs[i],cbs.filter(x=>x.checked).length,cbs.length);});const n=ocCityCbs.filter(c=>c.checked).length,m=ocCityCbs.filter(c=>c.indeterminate).length;ocAll.checked=n===ocCityCbs.length;ocAll.indeterminate=!ocAll.checked&&(n>0||m>0);}
+function syncOc(){Object.keys(COUNTY).forEach(k=>{const st=CSTATE[k];setBox(st.all,st.cbs.filter(x=>x.checked).length,st.cbs.length);});setBox(ocAll,ocCityCbs.filter(x=>x.checked).length,ocCityCbs.length);}
 /* one gathered dot per city; click to spread its hotels, click the label to gather again */
 const ocState={};const cdG=L.layerGroup().addTo(map);
 OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter(x=>x.c===city);if(!hs.length){ocState[city]=null;return;}const rooms=hs.reduce((a,x)=>a+(x.r||0),0);const known=hs.filter(x=>x.r!=null).length;
@@ -357,18 +375,21 @@ OC_ORDER.forEach(city=>{const hs=city==='Ontario'?H.filter(x=>!x.plan):NH.filter
  dot.on('click',()=>{ocState[city].expanded=true;refreshCity(city);});lbl.on('click',()=>{ocState[city].expanded=false;refreshCity(city);});
  ocState[city]={expanded:false,dot,lbl};});
 window.setCityCenter=(city,ll)=>{const st=ocState[city];if(!st)return;st.dot.setLatLng(ll);st.lbl.setLatLng(ll);};
-function refreshCity(city){const st=ocState[city];if(!st)return;const cbs=city==='Ontario'?tierCbs:ocTierCbs.filter(x=>x.dataset.ocity===city);const anyOn=cbs.some(c=>c.checked);
- const showDot=anyOn&&!st.expanded,showLbl=anyOn&&st.expanded;
+function refreshCity(city){const st=ocState[city];if(!st)return;
+ if(city==='Ontario'){const anyOn=tierCbs.some(c=>c.checked);const showDot=anyOn&&!st.expanded,showLbl=anyOn&&st.expanded;
+  showDot?st.dot.addTo(cdG):cdG.removeLayer(st.dot);showLbl?st.lbl.addTo(cdG):cdG.removeLayer(st.lbl);
+  tierCbs.forEach(cb=>{const g=TG[cb.dataset.tier];(st.expanded&&cb.checked)?g.addTo(map):map.removeLayer(g);});return;}
+ const on=cityCb(city).checked&&otCbs.some(c=>c.checked);const showDot=on&&!st.expanded,showLbl=on&&st.expanded;
  showDot?st.dot.addTo(cdG):cdG.removeLayer(st.dot);showLbl?st.lbl.addTo(cdG):cdG.removeLayer(st.lbl);
- cbs.forEach(cb=>{const g=city==='Ontario'?TG[cb.dataset.tier]:OG[city][cb.dataset.tier];(st.expanded&&cb.checked)?g.addTo(map):map.removeLayer(g);});}
-function setOcTier(cb,on){cb.checked=on;}
-ocTierCbs.forEach(cb=>cb.onchange=e=>{setOcTier(cb,e.target.checked);refreshCity(cb.dataset.ocity);syncOc();});
-ocCityCbs.forEach((cb,i)=>cb.onchange=e=>{const on=e.target.checked;ocTierCbs.filter(x=>x.dataset.ocity===OC_OTHER[i]).forEach(x=>setOcTier(x,on));refreshCity(OC_OTHER[i]);syncOc();});
-ocAll.onchange=e=>{const on=e.target.checked;ocTierCbs.forEach(x=>setOcTier(x,on));OC_OTHER.forEach(refreshCity);syncOc();};
-document.getElementById('ocExpand').onclick=()=>OC_ORDER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=true;refreshCity(c);});
+ otCbs.forEach(cb=>{const g=OG[city][cb.dataset.otier];(on&&st.expanded&&cb.checked)?g.addTo(map):map.removeLayer(g);});}
+otCbs.forEach(cb=>cb.onchange=()=>OC_OTHER.forEach(refreshCity));
+ocCityCbs.forEach(cb=>cb.onchange=()=>{refreshCity(cb.dataset.ocity);syncOc();});
+Object.keys(COUNTY).forEach(k=>CSTATE[k].all.onchange=e=>{const on=e.target.checked;CSTATE[k].cbs.forEach(x=>{x.checked=on;refreshCity(x.dataset.ocity);});syncOc();});
+ocAll.onchange=e=>{const on=e.target.checked;ocCityCbs.forEach(x=>{x.checked=on;refreshCity(x.dataset.ocity);});syncOc();};
+document.getElementById('ocExpand').onclick=()=>OC_OTHER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=true;refreshCity(c);});
 document.getElementById('onExpand').onclick=()=>{if(ocState['Ontario'])ocState['Ontario'].expanded=true;refreshCity('Ontario');};
 document.getElementById('onCollapse').onclick=()=>{if(ocState['Ontario'])ocState['Ontario'].expanded=false;refreshCity('Ontario');};
-document.getElementById('ocCollapse').onclick=()=>OC_ORDER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=false;refreshCity(c);});
+document.getElementById('ocCollapse').onclick=()=>OC_OTHER.forEach(c=>{if(!ocState[c])return;ocState[c].expanded=false;refreshCity(c);});
 const allCb=document.getElementById('tAllHotels');
 function syncAll(){const n=tierCbs.filter(c=>c.checked).length;allCb.checked=n===tierCbs.length;allCb.indeterminate=n>0&&n<tierCbs.length;}
 tierCbs.forEach(cb=>cb.onchange=e=>{refreshCity('Ontario');syncAll();});
@@ -381,7 +402,7 @@ function makeSection(masterId){const m=document.getElementById(masterId);if(!m)r
  const wrap=document.createElement('div');wrap.className='grp';let n=head.nextSibling;while(n){const nx=n.nextSibling;if(n.nodeType===1||(n.nodeType===3&&n.textContent.trim()))wrap.appendChild(n);n=nx;}box.appendChild(wrap);
  const b=document.createElement('button');b.type='button';b.className='secbtn';b.setAttribute('aria-label','expand');b.textContent='\u25B8';head.insertBefore(b,head.firstChild);
  b.onclick=e=>{e.preventDefault();e.stopPropagation();const o=wrap.classList.toggle('open');b.textContent=o?'\u25BE':'\u25B8';b.setAttribute('aria-label',o?'collapse':'expand');};}
-['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);OC_OTHER.forEach(c=>makeSection('oc_'+c.toLowerCase().replace(/ /g,'-')+'_all'));
+['tAllOverlays','tLA28','tAllHotels','tAllOther','tAllCity','tAllConn'].forEach(makeSection);Object.keys(COUNTY).forEach(k=>makeSection('oc_'+k.toLowerCase().replace(/ /g,'-')+'_all'));
 </script>
 </body>
 </html>
