@@ -7,10 +7,13 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-<script src="rates_history.js?v=1792434836"></script>
-<script src="la_transit.js?v=1792434836"></script>
-<script src="neighbors.js?v=1792434836"></script>
-<script src="connectors.js?v=1792434836"></script>
+<script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
+<script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
+<script src="rates_history.js?v=1792437616"></script>
+<script src="la_transit.js?v=1792437616"></script>
+<script src="neighbors.js?v=1792437616"></script>
+<script src="connectors.js?v=1792437616"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -138,7 +141,8 @@
   <p class="note"><a href="#" id="aboutTog">About the data</a></p>
   <div id="about" style="display:none">
     <p class="note" style="margin:6px 0 2px"><b>Hotels.</b></p>
-    <ul class="bib dp"><li>40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned <a href="#ref1" class="cite">[1]</a>.</li><li>Room counts as of October 2026, each cited on its card.</li><li>Hotel roster and addresses from GOCAL <a href="#ref4" class="cite">[4]</a>; positions placed by address.</li><li>ONT courtesy-shuttle badges from the airport’s list <a href="#ref5" class="cite">[5]</a>; nightly rate ranges are a snapshot <a href="#ref6" class="cite">[6]</a>.</li><li>Each city's hotels gather into one dot placed at the center of its city limits (Chino's sits at its hotels); tap a dot to spread them.</li><li>Hotels in the other cities, from El Monte and the east San Gabriel Valley through Pomona, east to Yucaipa and south to Corona, Perris and Moreno Valley, come from directory listings <a href="#ref7" class="cite">[7]</a> <a href="#ref8" class="cite">[8]</a> <a href="#ref9" class="cite">[9]</a> with room counts and meeting space checked against each hotel's official site or a meetings directory (Cvent, Meetings &amp;</li><li>Conventions, Northstar) in October 2026 and cited on the card, then audited link by link (109 of 141 room counts and 83 meeting figures confirmed on an official or meetings-industry page; the rest rest on the directory alone); several have rebranded since the directories were compiled and the card says so.</li><li>Placed by address and approximate; they are dash-outlined on the map.</li></ul>
+    <ul class="bib dp">
+      <li>Basemap is Google Maps (satellite or street). When a hotel card opens, its Google rating, review count, price band and current photo are fetched live from Google Places under the map owner's key and shown with a link to the Google listing; they are not stored. Room counts, meeting space and rates remain from the sources cited <a href="#ref20" class="cite">[20]</a>.</li><li>40 open hotels, 5,049 rooms counted, of 5,461 citywide; 1,800+ planned <a href="#ref1" class="cite">[1]</a>.</li><li>Room counts as of October 2026, each cited on its card.</li><li>Hotel roster and addresses from GOCAL <a href="#ref4" class="cite">[4]</a>; positions placed by address.</li><li>ONT courtesy-shuttle badges from the airport’s list <a href="#ref5" class="cite">[5]</a>; nightly rate ranges are a snapshot <a href="#ref6" class="cite">[6]</a>.</li><li>Each city's hotels gather into one dot placed at the center of its city limits (Chino's sits at its hotels); tap a dot to spread them.</li><li>Hotels in the other cities, from El Monte and the east San Gabriel Valley through Pomona, east to Yucaipa and south to Corona, Perris and Moreno Valley, come from directory listings <a href="#ref7" class="cite">[7]</a> <a href="#ref8" class="cite">[8]</a> <a href="#ref9" class="cite">[9]</a> with room counts and meeting space checked against each hotel's official site or a meetings directory (Cvent, Meetings &amp;</li><li>Conventions, Northstar) in October 2026 and cited on the card, then audited link by link (109 of 141 room counts and 83 meeting figures confirmed on an official or meetings-industry page; the rest rest on the directory alone); several have rebranded since the directories were compiled and the card says so.</li><li>Placed by address and approximate; they are dash-outlined on the map.</li></ul>
     <p class="note" style="margin:6px 0 2px"><b>Boundaries and transit.</b></p>
     <ul class="bib dp"><li>City limits are the official boundaries from the Board of Equalization layer, loaded live; gray hatched areas are unincorporated county land, computed from the county boundary minus every incorporated city <a href="#ref10" class="cite">[10]</a>.</li><li>Metro rail geometry from LA Metro’s GTFS feed, stitched to the 2025 network <a href="#ref11" class="cite">[11]</a>;</li><li>Metrolink lines placed by station, approximate <a href="#ref12" class="cite">[12]</a>.</li><li>No rail reaches ONT or the hotel district; nearest stations are Metrolink East Ontario and Rancho Cucamonga, and the A Line ends at Pomona North.</li><li>No shared hotel shuttle: 14 hotels run their own vans to ONT (badged on cards);</li><li>Omnitrans Route 61 links Holt Blvd, ONT and Ontario Mills every 20 minutes but skips the Convention Center <a href="#ref16" class="cite">[16]</a>.</li><li>West Valley Connector facts from SBCTA and Omnitrans <a href="#ref17" class="cite">[17]</a> <a href="#ref18" class="cite">[18]</a>;</li><li>Sports Empire program from the City and the rendering from the designer <a href="#ref3" class="cite">[3]</a> <a href="#ref19" class="cite">[19]</a>.</li></ul>
     <p class="note" style="margin:6px 0 2px"><b>LA28.</b></p>
@@ -165,6 +169,7 @@
       <li id="ref16">Omnitrans (2023, January). <i>Route 61 schedule</i>. PDF. <a href="https://omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf" target="_blank" rel="noopener">omnitrans.org/wp-content/uploads/2023/01/Route_61_jan23.pdf</a></li>
       <li id="ref17">San Bernardino County Transportation Authority (2026, October 9). <i>West Valley Connector BRT project page</i>. <a href="https://www.gosbcta.com/project/west-valley-connector-brt/" target="_blank" rel="noopener">www.gosbcta.com/project/west-valley-connector-brt/</a></li>
       <li id="ref18">Omnitrans (2024, May 6). <i>West Valley Connector construction update</i>. <a href="https://omnitrans.org/wvc_may_update/" target="_blank" rel="noopener">omnitrans.org/wvc_may_update/</a></li>
+      <li id="ref20">Google (2026). <i>Places API (New), Text Search and Place Photos; Maps JavaScript API</i>. Google Maps Platform. <a href="https://developers.google.com/maps/documentation/places/web-service/text-search" target="_blank" rel="noopener">developers.google.com/maps/documentation/places/web-service/text-search</a></li>
       <li id="ref19">RJM Design Group (2026). <i>Ontario Sports Empire site plan rendering</i>. <a href="https://rjmdesigngroup.com/ontario-sports-empire/" target="_blank" rel="noopener">rjmdesigngroup.com/ontario-sports-empire/</a></li>
     </ol>
   </div>
@@ -269,7 +274,12 @@ const ref=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Refe
 const lab=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
 const streets=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
 const satGroup=L.layerGroup([sat,lab]).addTo(map);
-document.getElementById('sat').onchange=e=>{if(e.target.checked){map.removeLayer(streets);satGroup.addTo(map);}else{map.removeLayer(satGroup);streets.addTo(map);}};
+let gSat=null,gRoad=null,useGoogle=false;
+function currentBase(){return document.getElementById('sat').checked?(useGoogle?gSat:satGroup):(useGoogle?gRoad:streets);}
+function setBase(){[satGroup,streets,gSat,gRoad].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l);});currentBase().addTo(map);}
+document.getElementById('sat').onchange=setBase;
+window.onGoogleReady=function(){try{if(!L.gridLayer.googleMutant)return;gSat=L.gridLayer.googleMutant({type:'hybrid',maxZoom:20});gRoad=L.gridLayer.googleMutant({type:'roadmap',maxZoom:20});useGoogle=true;setBase();}catch(e){console.warn('Google basemap unavailable',e);}};
+if(window._gmLoaded)window.onGoogleReady();
 
 /* approximate city limits */
 /* official city limits from the CA Board of Equalization city layer, loaded live */
@@ -307,7 +317,7 @@ H.forEach(h=>{
   const icon=L.divIcon({className:'',html:`<div class="mk${h.plan?' plan':''}" style="width:${d}px;height:${d}px;${h.plan?'':'background:'+CAT[h.t].c}">${h.r==null?'?':h.r}</div>`,iconSize:[d,d],iconAnchor:[d/2,d/2],popupAnchor:[0,-d/2]});
   const share=(h.plan||h.r==null)?'n/a':(100*h.r/TMD).toFixed(1)+'%';
   const note=h.plan?'Announced count; part of the 1,800+ rooms the City lists as planned.':'Published inventory. Nightly availability is only on the hotel’s booking page; property occupancy is not public.';
-  L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]).bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
+  const hm=L.marker([h.lat,h.lng],{icon}).addTo(TG[h.t]);hm._rdata={n:h.n,a:h.a+', Ontario, CA',lat:h.lat,lng:h.lng};hm.bindPopup(`${imgHTML(h)}<h2>${nameHTML(h)}</h2><p class="addr">${h.a}, Ontario. ${h.cls}.<br>${svHTML(h)}</p>${shuttleHTML(h)}
    <div class="kv"><div><b>${h.r==null?'?':h.r}</b><span>Rooms</span></div><div><b>${h.m}</b><span>Sq ft meeting</span></div><div><b>${share}</b><span>City share</span></div></div>
    ${ratesHTML(h)}${histHTML(h)}<p class="seas"><i>Seasonal availability</i>${h.s}</p><p class="seas"><i>Sources</i>${srcHTML(h)}${h.note?'<br><em>'+h.note+'</em>':''}</p><p class="note">${note}</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});
 });
@@ -377,7 +387,7 @@ NH.forEach(x=>{const d=Math.round(14+Math.sqrt(x.r||60)*0.9);
  const nm=x.web?`<a href="${x.web}" target="_blank" rel="noopener">${x.n}</a>`:x.n;
  const meet=x.m==null?'n/a':x.m.toLocaleString();
  const book=x.web?`<a href="${x.web}" target="_blank" rel="noopener">Check live rates</a>`:'';
- L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]).bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
+ const xm=L.marker([x.lat,x.lng],{icon}).addTo(OG[x.c][x.t]);xm._rdata={n:x.n,a:x.a+', CA',lat:x.lat,lng:x.lng};xm.bindPopup(`<h2>${nm}</h2><p class="addr">${x.a}. ${x.c}. ${CAT[x.t].l.split(' / ')[0]}.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.n+', '+x.a+', CA')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${x.r==null?'?':x.r}</b><span>Rooms</span></div><div><b>${meet}</b><span>Sq ft meeting</span></div><div><b style="font-size:1rem">${CAT[x.t].l.split(' / ')[0]}</b><span>Tier</span></div></div>${x.note?`<p class="seas"><i>Notes</i>${x.note}</p>`:''}<p class="seas"><i>Room rates</i>No rate snapshot taken for this property. ${book}</p><p class="seas"><i>Sources</i>${src}${extra?' &middot; '+extra:''}</p><p class="note">Room count and meeting space as given by the sources cited; ? or n/a where none publishes one. Placed by address, approximate.</p>`,{maxWidth:300,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,60]});});
 const otCbs=[...ocBox.querySelectorAll('input[data-otier]')];const ocCityCbs=[...countyBox.querySelectorAll('input[data-ocity]')];const ocAll=document.getElementById('tAllOther');
 const cityCb=c=>ocCityCbs.find(x=>x.dataset.ocity===c);
 function setBox(cb,n,len){cb.checked=n===len;cb.indeterminate=n>0&&n<len;}
@@ -434,10 +444,32 @@ function foldSections(el){if(!el||el.dataset.folded)return;el.dataset.folded='1'
  const h=el.querySelector('h2');(h&&h.parentNode===el)?h.after(bar):el.prepend(bar);}
 map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');foldSections(el);const ll=e.popup.getLatLng();if(ll&&window.innerWidth<=700){setTimeout(()=>{const pt=map.latLngToContainerPoint(ll);const h=map.getSize().y;if(pt.y<h*0.62||pt.y>h*0.9)map.panBy([0,pt.y-h*0.78],{animate:true});},60);}});
 
+/* live Google data on cards (Places API, New): rating, review count, price and the current photo are fetched when a card opens, shown with a Google link, never stored */
+const PLACE_CACHE={};const PRICE={PRICE_LEVEL_FREE:'Free',PRICE_LEVEL_INEXPENSIVE:'$',PRICE_LEVEL_MODERATE:'$$',PRICE_LEVEL_EXPENSIVE:'$$$',PRICE_LEVEL_VERY_EXPENSIVE:'$$$$'};
+async function livePlace(name,addr,lat,lng){const k=name+'|'+addr;if(PLACE_CACHE[k]!==undefined)return PLACE_CACHE[k];
+ const res=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GKEY,'X-Goog-FieldMask':'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.businessStatus,places.photos'},body:JSON.stringify({textQuery:name+', '+addr,maxResultCount:1,locationBias:{circle:{center:{latitude:lat,longitude:lng},radius:1500}}})});
+ if(!res.ok)throw new Error('places '+res.status);const j=await res.json();const pl=(j.places||[])[0]||null;PLACE_CACHE[k]=pl;return pl;}
+function esc(t){return String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function livePhotoInto(el,pl){const ph=(pl.photos||[])[0];if(!ph||!ph.name)return;const url=`https://places.googleapis.com/v1/${ph.name}/media?maxWidthPx=640&key=${GKEY}`;
+ let img=el.querySelector('img.hphoto');const fresh=!img;if(!img){img=document.createElement('img');img.className='hphoto';img.alt='';img.loading='lazy';el.insertBefore(img,el.firstChild);}
+ const prev=img.src;img.onerror=function(){if(prev&&prev!==url){img.onerror=function(){img.style.display='none';};img.src=prev;}else img.style.display='none';};img.onload=function(){img.style.display='';};img.src=url;
+ const au=(ph.authorAttributions||[])[0];const cap=document.createElement('div');cap.className='note';cap.style.cssText='margin:-4px 0 6px;font-size:.72rem';cap.innerHTML='Photo: Google Maps'+(au?', <a href="'+esc(au.uri)+'" target="_blank" rel="noopener">'+esc(au.displayName)+'</a>':'')+', loaded live';img.after(cap);}
+function liveRatingInto(el,x){if(!el||el.dataset.live)return;el.dataset.live='1';const kv=el.querySelector('.kv');if(!kv)return;
+ const note=document.createElement('div');note.className='note';note.style.margin='2px 0 0';note.innerHTML='<span style="color:#5f5b50">Checking Google for the live rating&hellip;</span>';kv.after(note);
+ livePlace(x.n,x.a,x.lat,x.lng).then(pl=>{if(!pl){note.innerHTML='<span style="color:#5f5b50">No Google listing found for this name and address; figures above are from the sources cited.</span>';return;}
+  livePhotoInto(el,pl);
+  const closed=pl.businessStatus&&pl.businessStatus!=='OPERATIONAL';const gl=`<a href="${esc(pl.googleMapsUri)}" target="_blank" rel="noopener">View on Google Maps</a>`;
+  if(pl.rating==null){note.innerHTML='Google lists this place but shows no rating yet. '+gl;return;}
+  MODE_HOOK(el,kv,note,pl,x,closed,gl);
+ }).catch(e=>{note.innerHTML='<span style="color:#5f5b50">Live Google rating unavailable right now; figures above are from the sources cited.</span>';console.warn(e);});}
+map.on('popupopen',e=>{const p=e.popup;const el=p.getElement()&&p.getElement().querySelector('.leaflet-popup-content');if(!el)return;const src=p._source;let x=null;
+ if(src&&src._rdata)x=src._rdata;else if(p._rdata)x=p._rdata;if(!x)return;liveRatingInto(el,x);});
+function MODE_HOOK(el,kv,note,pl,x,closed,gl){const row=document.createElement('div');row.className='kv';row.innerHTML=`<div><b>${pl.rating.toFixed(1)}</b><span>Rating (Google, live)</span></div><div><b>${(pl.userRatingCount||0).toLocaleString()}</b><span>Reviews (Google)</span></div><div><b style="font-size:1rem">${PRICE[pl.priceLevel]||'n/a'}</b><span>Price (Google)</span></div>`;kv.after(row);
+ note.innerHTML=`Rating, reviews and photo fetched live from Google Places just now; room count and meeting space above remain from the sources cited. ${gl}${closed?' <b style="color:#b3412f">Google lists this business as '+pl.businessStatus.toLowerCase().replace(/_/g,' ')+'.</b>':''}`;row.after(note);}
 /* audit stamp on every card */
 const AUDIT_DATE='October 19, 2026';
 function auditStamp(el){if(!el||el.querySelector('.astamp'))return;const d=document.createElement('div');d.className='astamp';
- d.innerHTML=`Link audit: ${AUDIT_DATE}. <a>What is this?</a><div class="ax">On the date shown, every link and figure on this card was checked by AI agents (Claude Sonnet, run by Anthropic's Claude), not by a person: each agent opened its share of the links to confirm it loads and points at the business or source named, each room count, rating or meeting figure was compared with the page it is cited to, and anything dead, wrong or out of date was reported and then fixed or removed. The audit is automated and can miss things a person would catch, so it is a check on links and figures, not an endorsement of any business. Links that could not be opened by automation (Instagram, Facebook, Yelp, Google Maps) were checked for correct form only. Ratings, prices and availability change daily, so treat figures as a dated snapshot and use the links for the live number.</div>`;
+ d.innerHTML=`Link audit: ${AUDIT_DATE}. <a>What is this?</a><div class="ax">On the date shown, every link and figure on this card was checked by AI agents (Claude Sonnet, run by Anthropic's Claude), not by a person: each agent opened its share of the links to confirm it loads and points at the business or source named, each room count, rating or meeting figure was compared with the page it is cited to, and anything dead, wrong or out of date was reported and then fixed or removed. The audit is automated and can miss things a person would catch, so it is a check on links and figures, not an endorsement of any business. Links that could not be opened by automation (Instagram, Facebook, Yelp, Google Maps) were checked for correct form only. Room counts and meeting space are the dated, cited figures; the Google rating, review count and photo on each card are fetched live from Google Places when the card opens and are not part of the audit.</div>`;
  d.querySelector('a').onclick=e=>{e.preventDefault();d.classList.toggle('open');};el.appendChild(d);}
 map.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.leaflet-popup-content');auditStamp(el);});
 </script>
