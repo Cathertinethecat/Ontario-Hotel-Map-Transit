@@ -10,10 +10,10 @@
 <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js"></script>
 <script>const GKEY="AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY";window.gmReady=function(){window._gmLoaded=true;if(window.onGoogleReady)window.onGoogleReady();};</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-3fjCEu5UzXlyiA2OGjzyUl3tprLpxY&loading=async&callback=gmReady&v=weekly"></script>
-<script src="rates_history.js?v=1792447507"></script>
-<script src="la_transit.js?v=1792447507"></script>
-<script src="neighbors.js?v=1792447507"></script>
-<script src="connectors.js?v=1792447507"></script>
+<script src="rates_history.js?v=1792458709"></script>
+<script src="la_transit.js?v=1792458709"></script>
+<script src="neighbors.js?v=1792458709"></script>
+<script src="connectors.js?v=1792458709"></script>
 <style>
   html,body{height:100%;margin:0;font-family:"Times New Roman",Times,serif;color:#1d1c19;background:#111}
   #map{position:absolute;inset:0}
@@ -54,7 +54,7 @@
   .sem::after{content:'';position:absolute;inset:5px;border-radius:2px;background:#2f7d4e}
   .splan{display:block;width:100%;height:auto;border-radius:3px;margin:0 0 8px;background:#efece2}
   .vm::after{content:'';position:absolute;inset:5px;border-radius:50%;background:#d4a017}
-  .vm.cA{width:30px;height:30px;border-width:4px}.vm.cB{width:24px;height:24px}.vm.cC{width:20px;height:20px}.vm.cD{width:18px;height:18px;border-color:#b0b0b0}.vm.cD::after{background:#b0b0b0}.vm.cU{width:18px;height:18px;border-color:#fff;border-style:dashed}.vm.cU::after{background:#fff}
+  .vm.cD{border-color:#b0b0b0}.vm.cD::after{background:#b0b0b0}.vm.cU{border-color:#fff;border-style:dashed}.vm.cU::after{background:#fff}
   #venueToggles label{display:block;width:100%;border:none;padding:2px 0;background:none}
   .lm{background:rgba(31,78,121,.9);color:#fff;border-radius:3px;padding:2px 6px;font:italic 11px "Times New Roman",Times,serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.5)}
   @media (max-width:600px), (pointer:coarse) and (max-width:900px){
@@ -145,7 +145,7 @@
     
   </div>
   <div class="btns" id="connToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tAllConn" checked> <b style="font-size:.85rem">Connectors</b> <span style="color:#5f5b50">(all on/off; tap a line for details)</span></label></div>
-  <div class="btns" id="venueToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tLA28" checked> <b style="font-size:.85rem">LA28 venues</b> <span style="color:#5f5b50">by spectator capacity</span></label>
+  <div class="btns" id="venueToggles"><label style="width:100%;padding:2px 0"><input type="checkbox" id="tLA28" checked> <b style="font-size:.85rem">LA28 venues</b> <span style="color:#5f5b50">(filter by spectator capacity; tap a venue for its card)</span></label>
     <label><input type="checkbox" data-vt="A" checked> <span style="color:#d4a017;font-size:1.1em">&#9673;</span> 50,000 and up</label>
     <label><input type="checkbox" data-vt="B" checked> <span style="color:#d4a017">&#9673;</span> 15,000 to 49,999</label>
     <label><input type="checkbox" data-vt="C" checked> <span style="color:#d4a017;font-size:.85em">&#9673;</span> 5,000 to 14,999</label>
@@ -380,7 +380,7 @@ function schedHTML(slug){const c=TRANSIT.schedule&&TRANSIT.schedule[slug];if(!c)
  if(x.length)t+=` (${x.join(', ')})`;
  if(c.sports.length>1)t+='<br>'+c.sports.map(s=>`${s[0]}: ${s[1]}, ${s[2]} session${s[2]>1?'s':''}`).join('<br>');
  t+=`<details class="sch"><summary>Session list</summary><div>${c.list.map(l=>`<span>${l[0]} &middot; ${l[1]} &middot; ${l[2]?l[2]+', ':''}${l[3]}</span>`).join('')}</div></details></p>`;return t;}
-TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';const cp=(TRANSIT.cap&&TRANSIT.cap[v[0]])||[null,'U',''];const sz={A:30,B:24,C:20,D:18,U:18}[cp[1]];L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:`<div class="vm c${cp[1]}" style="position:relative"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2]})}).addTo(laT[cp[1]]).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}<p class="seas"><i>Spectator capacity</i>${cp[0]?cp[0].toLocaleString()+(cp[2]?' ('+cp[2]+')':''):'Not yet published'+(cp[2]?' ('+cp[2]+')':'')}</p>${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a> &middot; <a href="https://en.wikipedia.org/wiki/Venues_of_the_2028_Summer_Olympics_and_Paralympics" target="_blank" rel="noopener">Capacity: Wikipedia, LA28 venues</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no capacities or attendance figures; the capacity shown is the operator or reported Games figure as compiled on Wikipedia (Oct 2026) and is a proxy, not an LA28 number.</p>`,{maxWidth:300});});
+TRANSIT.venues.forEach(v=>{const u='https://la28.org/en/games-plan/venues/'+v[0]+'.html';const cp=(TRANSIT.cap&&TRANSIT.cap[v[0]])||[null,'U',''];const sz=22;L.marker([v[3],v[4]],{icon:L.divIcon({className:'',html:`<div class="vm c${cp[1]}" style="position:relative"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2]}),zIndexOffset:650}).addTo(laT[cp[1]]).bindPopup(`<h2><a href="${u}" target="_blank" rel="noopener">${v[1]}</a></h2><p class="addr">${v[2]}. LA28 venue.<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v[1]+', '+v[2].replace(' Zone','')+', California')}" target="_blank" rel="noopener">Open in Google Maps</a></p><div class="kv"><div><b>${cp[0]?cp[0].toLocaleString():'TBD'}</b><span>spectator capacity${cp[2]?', '+cp[2]:''}</span></div></div><p class="seas"><i>Olympic</i>${v[5]||'None listed'}</p>${v[6]?`<p class="seas"><i>Paralympic</i>${v[6]}</p>`:''}${schedHTML(v[0])}<p class="seas"><i>Source</i><a href="${u}" target="_blank" rel="noopener">LA28 venue page</a> &middot; <a href="https://la28.org/en/games-plan/venues.html" target="_blank" rel="noopener">LA28 venues plan</a> &middot; <a href="${SCHED_URL}" target="_blank" rel="noopener">LA28 competition schedule v4.0</a> &middot; <a href="https://en.wikipedia.org/wiki/Venues_of_the_2028_Summer_Olympics_and_Paralympics" target="_blank" rel="noopener">Capacity: Wikipedia, LA28 venues</a></p><p class="note">Sports as listed by LA28; marker placed at the venue site, approximate. Olympic dates and sessions from LA28's competition schedule by event, version 4.0 (July 29, 2026), subject to change; Paralympic schedule not yet published. LA28 publishes no capacities or attendance figures; the capacity shown is the operator or reported Games figure as compiled on Wikipedia (Oct 2026) and is a proxy, not an LA28 number.</p>`,{maxWidth:300});});
 const tog=(id,g)=>document.getElementById(id).onchange=e=>{e.target.checked?g.addTo(map):map.removeLayer(g);if(id==='tRail'&&!e.target.checked)map.removeLayer(stG);};
 tog('tRail',railG);tog('tML',mlG);
 const vtCbs=[...document.querySelectorAll('#venueToggles input[data-vt]')];const vtAll=document.getElementById('tLA28');
